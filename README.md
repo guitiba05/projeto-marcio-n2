@@ -4,25 +4,116 @@ Versão própria do módulo **Trusses (Treliças)** do software
 [MdSolids](https://static-archives.git-pages.mst.edu/mdsolids/), desenvolvida como
 trabalho da avaliação N2 (CEFSA).
 
-O objetivo é entregar, no mínimo, as mesmas funcionalidades do módulo *Trusses*
-original: entrada de geometria e carregamentos, cálculo de reações de apoio, esforços
-normais nas barras (tração/compressão), determinação de barras de força zero e
-apresentação/interpretação dos resultados.
+O programa recebe uma treliça plana (nós, barras, apoios e cargas nodais) e
+devolve reações de apoio, esforços normais em todas as barras com classificação
+tração/compressão, barras de força zero, deslocamentos, **tensão normal
+(σ = N/A) e área requerida** para uma tensão admissível, além das verificações
+de equilíbrio — com conferência por um método independente.
 
-## Status
+## Como rodar
 
-Repositório inicializado. Escopo e enunciado documentados; implementação a iniciar.
-
-## Estrutura do repositório
-
-```
-docs/
-  enunciado.md          Texto original da proposta do trabalho
-  escopo-tecnico.md     Escopo funcional e base teórica prevista
+```powershell
+pip install -r requirements.txt
+python serve.py
 ```
 
-A estrutura de código será definida quando a linguagem/plataforma for escolhida
-(sem restrição pelo enunciado).
+Abre a interface em <http://127.0.0.1:8000/>. Requisitos: Python 3.11+.
+
+Opções: `python serve.py --port 8123 --no-browser`.
+A documentação automática da API fica em `/docs`.
+
+## O que o programa faz
+
+| Funcionalidade | Onde |
+| --- | --- |
+| Entrada de geometria: **grade por espaçamento e nº de intervalos**, nós e **barras por arraste** | editor + JSON |
+| Apoios: articulação fixa, roleto vertical e horizontal, livre | inspetor do nó |
+| Cargas nodais (Fx, Fy) | inspetor do nó |
+| Estaticidade `b + r` vs `2n` (iso / hipo / hiperestática) | painel de resultados |
+| Reações de apoio por equilíbrio global | tabela de reações |
+| Esforços normais em todas as barras (método matricial da rigidez) | tabela + diagrama |
+| Classificação automática tração / compressão / força zero | tabela + cores no diagrama |
+| Barras de força zero com a regra geométrica justificada | bloco "força zero" |
+| **Tensão normal σ = N/A** por barra (área informada no inspetor) | painel "tensões normais" |
+| **Área requerida** para uma tensão admissível (`A = abs(N)/σ_adm`) | painel "tensões normais" |
+| **Paleta MdSolids opcional** (tração ciano, compressão ouro, força zero magenta) | seletor "Paleta" |
+| Deslocamentos nodais | resumo + diagrama opcional |
+| Verificações: `ΣFx`, `ΣFy`, `ΣM`, resíduo nodal | bloco "verificações" |
+| Conferência independente pelo método dos nós | bloco "verificações" |
+| Casos de erro: hipostática, mecanismo, entrada inválida | mensagens no painel |
+| Relatório imprimível (salvar em PDF) | botão "Relatório" |
+| Importar / exportar JSON | barra superior |
+| 12 casos prontos (incluindo 2 casos de erro) | seletor "Caso pronto" |
+
+Convenção fixada em todo o projeto: **N > 0 é tração, N < 0 é compressão**.
+
+## Estrutura
+
+```
+app/
+  core/          domínio puro (sem I/O) — onde mora o cálculo
+    model.py         nós, barras, cargas, validação da entrada
+    determinacy.py   g = b + r − 2n
+    stiffness.py     matriz de rigidez, solução, reações, esforços normais
+    joints.py        método dos nós (conferência independente)
+    equilibrium.py   verificações de equilíbrio global e nodal
+    zero_force.py    regras R1/R2/R3 de barras de força zero
+    stress.py        tensão normal σ = N/A e área requerida
+    units.py         conversão (interno sempre kN, m, N e mm²)
+    solver.py        monta o contrato de saída
+  api/
+    server.py        rotas FastAPI (solve, stress, figure, report, presets)
+    report.py        relatório HTML imprimível
+  render/
+    svg.py           diagrama da treliça em SVG
+  web/               interface (HTML + CSS + JS, sem framework)
+data/cases/          12 casos com gabarito (fonte única de testes e presets)
+tests/               suíte pytest
+tools/               geradores (bateria de casos e documento de validação)
+docs/                enunciado, escopo, plano, teoria e validação
+```
+
+**Regra de ouro:** nenhuma conta de engenharia em JavaScript. O front apenas
+edita e desenha; quem calcula é `app/core`, em Python. Assim existe um único
+lugar para auditar e testar.
+
+## Testes
+
+```powershell
+python -m pytest -q
+```
+
+A suíte cobre: os 12 casos da bateria (esforços, reações, estaticidade,
+equilíbrio, conferência cruzada e barras de força zero), validação de entrada,
+propriedades da matriz de rigidez, independência de `EA` na isostática e
+dependência na hiperestática, unidades, regras de força zero e a API HTTP.
+
+Ferramentas auxiliares:
+
+```powershell
+python tools/build_cases.py        # regera os gabaritos e revalida os 12 casos
+python tools/build_validation.py   # regera docs/validacao.md
+```
+
+## Rotas da API
+
+| Rota | Para que serve |
+| --- | --- |
+| `POST /api/solve` | esforços, reações, verificações, deslocamentos e o bloco de tensão |
+| `POST /api/stress` | `mode="stress"` (σ = N/A com a área de cada barra) ou `mode="area"` (área requerida para uma tensão admissível) |
+| `POST /api/figure` | diagrama SVG; aceita `palette` (`padrao` \| `mdsolids`) e `showStress` |
+| `POST /api/report` | relatório HTML imprimível, com a tabela de tensões quando há áreas |
+| `GET /api/presets` | lista dos 12 casos prontos |
+| `GET /api/health` | estado do serviço |
+
+## Documentação
+
+- [`docs/enunciado.md`](docs/enunciado.md) — texto original da proposta
+- [`docs/plano.md`](docs/plano.md) — plano de execução (fases, arquitetura, riscos)
+- [`docs/escopo-tecnico.md`](docs/escopo-tecnico.md) — escopo funcional e base teórica
+- [`docs/teoria.md`](docs/teoria.md) — **base teórica para a apresentação (4,0 pts)**
+- [`docs/validacao.md`](docs/validacao.md) — registro de validação dos 12 casos
+- [`docs/mdsolids-truss.md`](docs/mdsolids-truss.md) — **evidência do binário oficial e matriz de paridade item a item**
 
 ## Requisitos do trabalho (resumo)
 
@@ -35,21 +126,3 @@ A estrutura de código será definida quando a linguagem/plataforma for escolhid
 | Presença na prova N2 + assinatura da lista | Condição para a nota |
 
 Detalhes completos em [`docs/enunciado.md`](docs/enunciado.md).
-
-## Base teórica a apresentar
-
-- Idealização da treliça: barras biarticuladas, cargas nos nós, hipóteses de
-  linearidade e pequenas deformações.
-- Equilíbrio global: equações de equilíbrio externo, apoios e reações, treliças
-  isostáticas, hipostáticas e hiperestáticas (grau de indeterminação).
-- **Método dos nós**: equilíbrio nó a nó, ordem de resolução, convenção de
-  tração/compressão.
-- **Método das seções**: corte de Ritter para esforços em barras específicas.
-- **Método matricial da rigidez**: matriz de rigidez da barra, matriz de
-  transformação (rotação), montagem da matriz global, condições de contorno,
-  resolução do sistema e recuperação dos esforços normais.
-- Casos particulares: barras de força zero, simetria, cargas em nós.
-
-## Referência
-
-- MdSolids — módulo *Trusses*: <https://static-archives.git-pages.mst.edu/mdsolids/>

@@ -26,3 +26,7 @@ build/
 *.exe
 *.dll
 *.zip
+
+# Metadados da ferramenta de sessão (não são conteúdo do projeto)
+.pi/
+.agents/

@@ -1,0 +1,17 @@
+[project]
+name = "trusses-mdsolids"
+version = "1.0.0"
+description = "Versão própria do módulo Trusses (treliças planas) do MdSolids"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.5",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["error::DeprecationWarning", "ignore:Using `httpx` with `starlette.testclient`:Warning"]
