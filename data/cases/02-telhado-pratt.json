@@ -1,0 +1,202 @@
+{
+  "name": "Treliça de telhado (Pratt) com carga distribuída convertida em nodal",
+  "description": "Telhado de duas águas com 4 painéis e carga vertical aplicada nos nós do banzo superior (equivalente a uma carga distribuída sobre a cobertura). Exercita conversão de carregamento e múltiplos nós carregados.",
+  "exercises": [
+    "carga distribuída → nodal",
+    "banzo superior comprimido",
+    "simetria"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "C1",
+        "x": 2.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "C2",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "C3",
+        "x": 6.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "E",
+        "x": 8.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "T1",
+        "x": 2.0,
+        "y": 2.5,
+        "support": "none"
+      },
+      {
+        "id": "T2",
+        "x": 4.0,
+        "y": 3.0,
+        "support": "none"
+      },
+      {
+        "id": "T3",
+        "x": 6.0,
+        "y": 2.5,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "AC1",
+        "a": "A",
+        "b": "C1",
+        "EA": 1.0
+      },
+      {
+        "id": "C1C2",
+        "a": "C1",
+        "b": "C2",
+        "EA": 1.0
+      },
+      {
+        "id": "C2C3",
+        "a": "C2",
+        "b": "C3",
+        "EA": 1.0
+      },
+      {
+        "id": "C3E",
+        "a": "C3",
+        "b": "E",
+        "EA": 1.0
+      },
+      {
+        "id": "AT1",
+        "a": "A",
+        "b": "T1",
+        "EA": 1.0
+      },
+      {
+        "id": "T1T2",
+        "a": "T1",
+        "b": "T2",
+        "EA": 1.0
+      },
+      {
+        "id": "T2T3",
+        "a": "T2",
+        "b": "T3",
+        "EA": 1.0
+      },
+      {
+        "id": "T3E",
+        "a": "T3",
+        "b": "E",
+        "EA": 1.0
+      },
+      {
+        "id": "C1T1",
+        "a": "C1",
+        "b": "T1",
+        "EA": 1.0
+      },
+      {
+        "id": "C2T2",
+        "a": "C2",
+        "b": "T2",
+        "EA": 1.0
+      },
+      {
+        "id": "C3T3",
+        "a": "C3",
+        "b": "T3",
+        "EA": 1.0
+      },
+      {
+        "id": "T1C2",
+        "a": "T1",
+        "b": "C2",
+        "EA": 1.0
+      },
+      {
+        "id": "T3C2",
+        "a": "T3",
+        "b": "C2",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "T1",
+        "Fx": 0.0,
+        "Fy": -4.0
+      },
+      {
+        "node": "T2",
+        "Fx": 0.0,
+        "Fy": -8.0
+      },
+      {
+        "node": "T3",
+        "Fx": 0.0,
+        "Fy": -4.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 8,
+      "b": 13,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "AC1": 6.400000000000004,
+      "C1C2": 6.400000000000004,
+      "C2C3": 6.400000000000006,
+      "C3E": 6.399999999999999,
+      "AT1": -10.244998779892542,
+      "T1T2": -8.246211251235314,
+      "T2T3": -8.246211251235312,
+      "T3E": -10.244998779892553,
+      "C1T1": 0.0,
+      "C2T2": -4.000000000000004,
+      "C3T3": 0.0,
+      "T1C2": 2.5612496949731427,
+      "T3C2": 2.5612496949731383
+    },
+    "reactions": {
+      "A": {
+        "Rx": -1.4210854715202004e-14,
+        "Ry": 7.9999999999999885
+      },
+      "E": {
+        "Rx": 0.0,
+        "Ry": 7.999999999999998
+      }
+    },
+    "zeroForce": [
+      "C1T1",
+      "C3T3"
+    ],
+    "tolerance": 1e-06
+  }
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caso 08-hiperestatica — Treliça hiperestática de grau 1</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 28px 32px 56px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a; background: #fff; line-height: 1.45;
+}
+h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+     color: #475569; margin: 26px 0 8px; padding-bottom: 5px;
+     border-bottom: 1px solid #e2e8f0; }
+.sub { color: #64748b; font-size: 12.5px; margin: 0 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 9px; border-bottom: 1px solid #eef2f7; }
+th { background: #f8fafc; font-weight: 600; color: #334155; font-size: 11.5px;
+     text-transform: uppercase; letter-spacing: 0.04em; }
+.sigma { text-transform: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* unidades e símbolos não podem ser maiusculizados (kN ≠ KN, σ ≠ Σ) */
+th.num { text-transform: none; }
+.tração { color: #2563eb; font-weight: 600; }
+.compressão { color: #dc2626; font-weight: 600; }
+.força-zero { color: #94a3b8; }
+.fig { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin: 6px 0 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px;
+        color: #475569; margin-top: 10px; }
+.meta b { color: #0f172a; }
+.chip { display: inline-block; padding: 1px 9px; border-radius: 999px;
+        font-size: 11.5px; font-weight: 600; }
+.chip.ok { background: #dcfce7; color: #166534; }
+.chip.bad { background: #fee2e2; color: #991b1b; }
+.note { font-size: 12px; color: #475569; background: #f8fafc; border-left: 3px solid #cbd5e1;
+        padding: 8px 12px; margin: 8px 0 0; border-radius: 0 6px 6px 0; }
+ul.plain { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; }
+ul.plain li { margin-bottom: 3px; }
+.bar { display: flex; justify-content: space-between; align-items: baseline;
+       gap: 16px; flex-wrap: wrap; }
+.actions { margin-top: 24px; }
+button {
+  font: inherit; font-size: 13px; padding: 7px 16px; border-radius: 7px; cursor: pointer;
+  border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
+}
+button.primary { background: #0f172a; border-color: #0f172a; color: #fff; }
+@page { size: A4; margin: 14mm; }
+@media print {
+  body { padding: 0; }
+  .no-print { display: none !important; }
+  h2 { break-after: avoid; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div>
+    <h1>Caso 08-hiperestatica — Treliça hiperestática de grau 1</h1>
+    <p class="sub">Módulo Trusses — versão própria do MdSolids · gerado em 24/10/2026 17:02</p>
+  </div>
+  <div class="actions no-print">
+    <button class="primary" onclick="window.print()">Imprimir / salvar PDF</button>
+  </div>
+</div>
+
+<h2>Modelo</h2>
+<table><thead><tr><th>nó</th><th class="num">x [m]</th><th class="num">y [m]</th><th>apoio</th><th>cargas aplicadas</th></tr></thead><tbody><tr><td>A</td><td class="num">0.000</td><td class="num">0.000</td><td>pin</td><td>—</td></tr><tr><td>B</td><td class="num">4.000</td><td class="num">0.000</td><td>roller</td><td>—</td></tr><tr><td>C</td><td class="num">4.000</td><td class="num">4.000</td><td>none</td><td>Fx=0.000, Fy=-10.000</td></tr><tr><td>D</td><td class="num">0.000</td><td class="num">4.000</td><td>none</td><td>—</td></tr></tbody></table>
+<div class="meta">
+  <span>nós: <b>4</b></span>
+  <span>barras: <b>6</b></span>
+  <span>reações: <b>3</b></span>
+  <span>grau g = b + r − 2n: <b>1</b></span>
+  <span>classificação: <b>hiperestática</b></span>
+  <span><span class="chip ok">equilíbrio verificado</span></span>
+</div>
+<p class="note">b + r = 6 + 3 = 9 &gt; 2n = 8. Grau de indeterminação 1: o método matricial resolve, mas os esforços dependem da rigidez relativa das barras (EA).</p>
+
+<h2>Diagrama de esforços normais</h2>
+<div class="fig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 520" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="diagrama da treliça com esforços normais"><rect x="0" y="0" width="880" height="520" fill="#ffffff"/><line x1="234.00" y1="466.00" x2="646.00" y2="466.00" stroke="#2563eb" stroke-width="1.90" stroke-linecap="round"/><text x="440.00" y="453.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">1.04</text><line x1="646.00" y1="466.00" x2="646.00" y2="54.00" stroke="#dc2626" stroke-width="4.20" stroke-linecap="round"/><text x="659.00" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−8.96</text><line x1="646.00" y1="54.00" x2="234.00" y2="54.00" stroke="#2563eb" stroke-width="1.90" stroke-linecap="round"/><text x="440.00" y="41.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">1.04</text><line x1="234.00" y1="54.00" x2="234.00" y2="466.00" stroke="#2563eb" stroke-width="1.90" stroke-linecap="round"/><text x="221.00" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">1.04</text><line x1="234.00" y1="466.00" x2="646.00" y2="54.00" stroke="#dc2626" stroke-width="2.02" stroke-linecap="round"/><text x="430.81" y="250.81" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−1.46</text><line x1="646.00" y1="466.00" x2="234.00" y2="54.00" stroke="#dc2626" stroke-width="2.02" stroke-linecap="round"/><text x="449.19" y="250.81" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−1.46</text><line x1="646.00" y1="10.00" x2="646.00" y2="45.00" stroke="#7c3aed" stroke-width="1.9"/><polygon points="646.00,45.00 641.50,37.21 650.50,37.21" fill="#7c3aed"/><text x="646.00" y="4.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#7c3aed">10.0</text><line x1="646.00" y1="457.00" x2="646.00" y2="426.00" stroke="#059669" stroke-width="1.7"/><polygon points="646.00,426.00 650.50,433.79 641.50,433.79" fill="#059669"/><text x="646.00" y="417.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="600" fill="#059669">10.0</text><polygon points="234.00,466.00 225.00,479.00 243.00,479.00" fill="none" stroke="#059669" stroke-width="1.8"/><line x1="221.00" y1="483.00" x2="247.00" y2="483.00" stroke="#059669" stroke-width="1.4"/><polygon points="646.00,466.00 637.00,479.00 655.00,479.00" fill="none" stroke="#059669" stroke-width="1.8"/><circle cx="641.00" cy="482.40" r="2.6" fill="none" stroke="#059669" stroke-width="1.4"/><circle cx="651.00" cy="482.40" r="2.6" fill="none" stroke="#059669" stroke-width="1.4"/><line x1="633.00" y1="485.60" x2="659.00" y2="485.60" stroke="#059669" stroke-width="1.4"/><circle cx="234.00" cy="466.00" r="4.2" fill="#0f172a"/><text x="242.00" y="458.00" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">A</text><circle cx="646.00" cy="466.00" r="4.2" fill="#0f172a"/><text x="654.00" y="458.00" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">B</text><circle cx="646.00" cy="54.00" r="4.2" fill="#0f172a"/><text x="654.00" y="46.00" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">C</text><circle cx="234.00" cy="54.00" r="4.2" fill="#0f172a"/><text x="242.00" y="46.00" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">D</text><line x1="16.00" y1="506.00" x2="36.00" y2="506.00" stroke="#2563eb" stroke-width="2.6"/><text x="42.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">tração</text><line x1="134.00" y1="506.00" x2="154.00" y2="506.00" stroke="#dc2626" stroke-width="2.6"/><text x="160.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">compressão</text><line x1="252.00" y1="506.00" x2="272.00" y2="506.00" stroke="#94a3b8" stroke-width="2.6" stroke-dasharray="5 4"/><text x="278.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">força zero</text><text x="868.00" y="509.60" text-anchor="end" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">esforços em kN</text></svg></div>
+<p class="note">Convenção: <b>N &gt; 0 é tração</b> e <b>N &lt; 0 é compressão</b>.
+Espessura proporcional ao módulo do esforço. Barras tracejadas em cinza são de força zero.</p>
+
+<h2>Reações de apoio</h2>
+<table><thead><tr><th>nó</th><th>apoio</th><th class="num">Rx [kN]</th><th class="num">Ry [kN]</th></tr></thead><tbody><tr><td>A</td><td>pin</td><td class="num">0.000</td><td class="num">0.000</td></tr><tr><td>B</td><td>roller</td><td class="num">—</td><td class="num">10.000</td></tr></tbody></table>
+
+<h2>Esforços normais nas barras</h2>
+<table><thead><tr><th>barra</th><th>nós</th><th class="num">L [m]</th><th class="num">N [kN]</th><th>estado</th></tr></thead><tbody><tr><td>AB</td><td>A–B</td><td class="num">4.000</td><td class="num tração">1.036</td><td class="tração">tração</td></tr><tr><td>BC</td><td>B–C</td><td class="num">4.000</td><td class="num compressão">-8.964</td><td class="compressão">compressão</td></tr><tr><td>CD</td><td>C–D</td><td class="num">4.000</td><td class="num tração">1.036</td><td class="tração">tração</td></tr><tr><td>DA</td><td>D–A</td><td class="num">4.000</td><td class="num tração">1.036</td><td class="tração">tração</td></tr><tr><td>AC</td><td>A–C</td><td class="num">5.657</td><td class="num compressão">-1.464</td><td class="compressão">compressão</td></tr><tr><td>BD</td><td>B–D</td><td class="num">5.657</td><td class="num compressão">-1.464</td><td class="compressão">compressão</td></tr></tbody></table>
+<div class="meta">
+  <span>tração: <b>3</b></span>
+  <span>compressão: <b>3</b></span>
+  <span>força zero: <b>0</b></span>
+  <span>maior |N|: <b>8.964 kN</b></span>
+  <span>maior deslocamento: <b>43.227643 m</b></span>
+</div>
+
+<h2>Tensões normais (<span class="sigma">σ</span> = N/A)</h2>
+<p class="note">Informe a área da seção de cada barra para obter as tensões normais.</p>
+<h2>Barras de força zero</h2>
+<p class="note">nenhuma barra de força zero neste caso.</p>
+
+<h2>Verificações</h2>
+<table>
+<thead><tr><th>verificação</th><th class="num">valor</th><th>situação</th></tr></thead>
+<tbody>
+<tr><td>ΣFx (cargas + reações)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>ΣFy (cargas + reações)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>ΣM na origem</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>maior resíduo nodal (nó C)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+</tbody>
+</table>
+<p class="note">método dos nós não aplicável: o método dos nós exige treliça isostática: b + r = 9, 2n = 8.</p>
+
+<h2>Avisos</h2>
+<ul class="plain"><li>Treliça hiperestática: os esforços normais dependem da rigidez relativa das barras (EA). Confira os valores de EA usados.</li></ul>
+
+<p class="note">Resíduos diferentes de zero na casa de 1e−15 são ruído de ponto
+flutuante, não erro de formulação. Os valores de esforço normal foram conferidos
+contra o método dos nós, que é um algoritmo independente do método da rigidez.</p>
+</body>
+</html>

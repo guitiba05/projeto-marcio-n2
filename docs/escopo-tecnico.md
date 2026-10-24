@@ -42,8 +42,9 @@ isostáticas.
 - Conferência contra o MdSolids original nos 8 exercícios da banca
 - Testes automatizados com valores esperados de reações e esforços normais
 
-## 4. Pontos a definir
+## 4. Decisões tomadas (ver `plano.md` §2)
 
-- Linguagem / plataforma (enunciado não restringe)
-- Interface: desktop, web ou CLI + arquivo de entrada
-- Formato de entrada dos dados (JSON é o candidato natural)
+- **Linguagem / plataforma:** Python 3.11+ (numpy) + FastAPI + front-end web (SVG)
+- **Interface:** aplicação web local (`localhost`) com editor de treliça, diagrama e tabela
+- **Formato de entrada:** JSON versionado (contrato em `plano.md` §4), import/export pela UI
+- **Método:** matricial da rigidez, com conferência por método dos nós e das seções

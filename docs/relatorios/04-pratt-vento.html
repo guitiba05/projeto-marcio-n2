@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caso 04-pratt-vento — Treliça Pratt com carga lateral (vento)</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 28px 32px 56px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a; background: #fff; line-height: 1.45;
+}
+h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+     color: #475569; margin: 26px 0 8px; padding-bottom: 5px;
+     border-bottom: 1px solid #e2e8f0; }
+.sub { color: #64748b; font-size: 12.5px; margin: 0 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 9px; border-bottom: 1px solid #eef2f7; }
+th { background: #f8fafc; font-weight: 600; color: #334155; font-size: 11.5px;
+     text-transform: uppercase; letter-spacing: 0.04em; }
+.sigma { text-transform: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* unidades e símbolos não podem ser maiusculizados (kN ≠ KN, σ ≠ Σ) */
+th.num { text-transform: none; }
+.tração { color: #2563eb; font-weight: 600; }
+.compressão { color: #dc2626; font-weight: 600; }
+.força-zero { color: #94a3b8; }
+.fig { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin: 6px 0 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px;
+        color: #475569; margin-top: 10px; }
+.meta b { color: #0f172a; }
+.chip { display: inline-block; padding: 1px 9px; border-radius: 999px;
+        font-size: 11.5px; font-weight: 600; }
+.chip.ok { background: #dcfce7; color: #166534; }
+.chip.bad { background: #fee2e2; color: #991b1b; }
+.note { font-size: 12px; color: #475569; background: #f8fafc; border-left: 3px solid #cbd5e1;
+        padding: 8px 12px; margin: 8px 0 0; border-radius: 0 6px 6px 0; }
+ul.plain { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; }
+ul.plain li { margin-bottom: 3px; }
+.bar { display: flex; justify-content: space-between; align-items: baseline;
+       gap: 16px; flex-wrap: wrap; }
+.actions { margin-top: 24px; }
+button {
+  font: inherit; font-size: 13px; padding: 7px 16px; border-radius: 7px; cursor: pointer;
+  border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
+}
+button.primary { background: #0f172a; border-color: #0f172a; color: #fff; }
+@page { size: A4; margin: 14mm; }
+@media print {
+  body { padding: 0; }
+  .no-print { display: none !important; }
+  h2 { break-after: avoid; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div>
+    <h1>Caso 04-pratt-vento — Treliça Pratt com carga lateral (vento)</h1>
+    <p class="sub">Módulo Trusses — versão própria do MdSolids · gerado em 24/10/2026 17:02</p>
+  </div>
+  <div class="actions no-print">
+    <button class="primary" onclick="window.print()">Imprimir / salvar PDF</button>
+  </div>
+</div>
+
+<h2>Modelo</h2>
+<table><thead><tr><th>nó</th><th class="num">x [m]</th><th class="num">y [m]</th><th>apoio</th><th>cargas aplicadas</th></tr></thead><tbody><tr><td>B0</td><td class="num">0.000</td><td class="num">0.000</td><td>pin</td><td>—</td></tr><tr><td>B1</td><td class="num">2.000</td><td class="num">0.000</td><td>none</td><td>—</td></tr><tr><td>B2</td><td class="num">4.000</td><td class="num">0.000</td><td>none</td><td>—</td></tr><tr><td>B3</td><td class="num">6.000</td><td class="num">0.000</td><td>roller</td><td>—</td></tr><tr><td>T0</td><td class="num">0.000</td><td class="num">2.000</td><td>none</td><td>—</td></tr><tr><td>T1</td><td class="num">2.000</td><td class="num">2.000</td><td>none</td><td>Fx=0.000, Fy=-10.000</td></tr><tr><td>T2</td><td class="num">4.000</td><td class="num">2.000</td><td>none</td><td>Fx=0.000, Fy=-10.000</td></tr><tr><td>T3</td><td class="num">6.000</td><td class="num">2.000</td><td>none</td><td>Fx=8.000, Fy=0.000</td></tr></tbody></table>
+<div class="meta">
+  <span>nós: <b>8</b></span>
+  <span>barras: <b>13</b></span>
+  <span>reações: <b>3</b></span>
+  <span>grau g = b + r − 2n: <b>0</b></span>
+  <span>classificação: <b>isostática</b></span>
+  <span><span class="chip ok">equilíbrio verificado</span></span>
+</div>
+<p class="note">b + r = 13 + 3 = 16 = 2n = 16. As equações de equilíbrio bastam; os esforços normais independem de EA.</p>
+
+<h2>Diagrama de esforços normais</h2>
+<div class="fig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 520" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="diagrama da treliça com esforços normais"><rect x="0" y="0" width="880" height="520" fill="#ffffff"/><line x1="54.00" y1="388.67" x2="311.33" y2="388.67" stroke="#2563eb" stroke-width="2.76" stroke-linecap="round"/><text x="182.67" y="375.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">8.00</text><line x1="311.33" y1="388.67" x2="568.67" y2="388.67" stroke="#2563eb" stroke-width="3.83" stroke-linecap="round"/><text x="440.00" y="375.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">15.33</text><line x1="568.67" y1="388.67" x2="826.00" y2="388.67" stroke="#2563eb" stroke-width="3.44" stroke-linecap="round"/><text x="697.33" y="375.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">12.67</text><line x1="54.00" y1="131.33" x2="311.33" y2="131.33" stroke="#dc2626" stroke-width="2.66" stroke-linecap="round"/><text x="182.67" y="118.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−7.33</text><line x1="311.33" y1="131.33" x2="568.67" y2="131.33" stroke="#dc2626" stroke-width="2.28" stroke-linecap="round"/><text x="440.00" y="118.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−4.67</text><line x1="568.67" y1="131.33" x2="826.00" y2="131.33" stroke="#2563eb" stroke-width="2.76" stroke-linecap="round"/><text x="697.33" y="118.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">8.00</text><line x1="54.00" y1="388.67" x2="54.00" y2="131.33" stroke="#dc2626" stroke-width="2.66" stroke-linecap="round"/><text x="67.00" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−7.33</text><line x1="311.33" y1="388.67" x2="311.33" y2="131.33" stroke="#dc2626" stroke-width="2.66" stroke-linecap="round"/><text x="324.33" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−7.33</text><line x1="568.67" y1="388.67" x2="568.67" y2="131.33" stroke="#2563eb" stroke-width="1.99" stroke-linecap="round"/><text x="581.67" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">2.67</text><line x1="826.00" y1="388.67" x2="826.00" y2="131.33" stroke="#94a3b8" stroke-width="1.60" stroke-linecap="round" stroke-dasharray="5 4"/><text x="839.00" y="260.00" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#94a3b8">0.00</text><line x1="54.00" y1="131.33" x2="311.33" y2="388.67" stroke="#2563eb" stroke-width="3.11" stroke-linecap="round"/><text x="191.86" y="250.81" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#2563eb">10.37</text><line x1="311.33" y1="131.33" x2="568.67" y2="388.67" stroke="#dc2626" stroke-width="2.15" stroke-linecap="round"/><text x="449.19" y="250.81" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−3.77</text><line x1="568.67" y1="131.33" x2="826.00" y2="388.67" stroke="#dc2626" stroke-width="4.20" stroke-linecap="round"/><text x="706.53" y="250.81" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#dc2626">−17.91</text><line x1="311.33" y1="87.33" x2="311.33" y2="122.33" stroke="#7c3aed" stroke-width="1.9"/><polygon points="311.33,122.33 306.83,114.54 315.83,114.54" fill="#7c3aed"/><text x="311.33" y="81.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#7c3aed">10.0</text><line x1="568.67" y1="87.33" x2="568.67" y2="122.33" stroke="#7c3aed" stroke-width="1.9"/><polygon points="568.67,122.33 564.17,114.54 573.17,114.54" fill="#7c3aed"/><text x="568.67" y="81.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#7c3aed">10.0</text><line x1="782.00" y1="131.33" x2="817.00" y2="131.33" stroke="#7c3aed" stroke-width="1.9"/><polygon points="817.00,131.33 809.21,135.83 809.21,126.83" fill="#7c3aed"/><text x="776.00" y="131.33" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600" fill="#7c3aed">8.0</text><line x1="45.00" y1="388.67" x2="14.00" y2="388.67" stroke="#059669" stroke-width="1.7"/><polygon points="14.00,388.67 21.79,384.17 21.79,393.17" fill="#059669"/><text x="5.00" y="388.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="600" fill="#059669">−8.0</text><line x1="54.00" y1="379.67" x2="54.00" y2="348.67" stroke="#059669" stroke-width="1.7"/><polygon points="54.00,348.67 58.50,356.46 49.50,356.46" fill="#059669"/><text x="54.00" y="339.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="600" fill="#059669">7.3</text><line x1="826.00" y1="379.67" x2="826.00" y2="348.67" stroke="#059669" stroke-width="1.7"/><polygon points="826.00,348.67 830.50,356.46 821.50,356.46" fill="#059669"/><text x="826.00" y="339.67" text-anchor="middle" dominant-baseline="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="600" fill="#059669">12.7</text><polygon points="54.00,388.67 45.00,401.67 63.00,401.67" fill="none" stroke="#059669" stroke-width="1.8"/><line x1="41.00" y1="405.67" x2="67.00" y2="405.67" stroke="#059669" stroke-width="1.4"/><polygon points="826.00,388.67 817.00,401.67 835.00,401.67" fill="none" stroke="#059669" stroke-width="1.8"/><circle cx="821.00" cy="405.07" r="2.6" fill="none" stroke="#059669" stroke-width="1.4"/><circle cx="831.00" cy="405.07" r="2.6" fill="none" stroke="#059669" stroke-width="1.4"/><line x1="813.00" y1="408.27" x2="839.00" y2="408.27" stroke="#059669" stroke-width="1.4"/><circle cx="54.00" cy="388.67" r="4.2" fill="#0f172a"/><text x="62.00" y="380.67" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">B0</text><circle cx="311.33" cy="388.67" r="4.2" fill="#0f172a"/><text x="319.33" y="380.67" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">B1</text><circle cx="568.67" cy="388.67" r="4.2" fill="#0f172a"/><text x="576.67" y="380.67" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">B2</text><circle cx="826.00" cy="388.67" r="4.2" fill="#0f172a"/><text x="834.00" y="380.67" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">B3</text><circle cx="54.00" cy="131.33" r="4.2" fill="#0f172a"/><text x="62.00" y="123.33" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">T0</text><circle cx="311.33" cy="131.33" r="4.2" fill="#0f172a"/><text x="319.33" y="123.33" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">T1</text><circle cx="568.67" cy="131.33" r="4.2" fill="#0f172a"/><text x="576.67" y="123.33" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">T2</text><circle cx="826.00" cy="131.33" r="4.2" fill="#0f172a"/><text x="834.00" y="123.33" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">T3</text><line x1="16.00" y1="506.00" x2="36.00" y2="506.00" stroke="#2563eb" stroke-width="2.6"/><text x="42.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">tração</text><line x1="134.00" y1="506.00" x2="154.00" y2="506.00" stroke="#dc2626" stroke-width="2.6"/><text x="160.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">compressão</text><line x1="252.00" y1="506.00" x2="272.00" y2="506.00" stroke="#94a3b8" stroke-width="2.6" stroke-dasharray="5 4"/><text x="278.00" y="509.60" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">força zero</text><text x="868.00" y="509.60" text-anchor="end" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="10.5" fill="#64748b">esforços em kN</text></svg></div>
+<p class="note">Convenção: <b>N &gt; 0 é tração</b> e <b>N &lt; 0 é compressão</b>.
+Espessura proporcional ao módulo do esforço. Barras tracejadas em cinza são de força zero.</p>
+
+<h2>Reações de apoio</h2>
+<table><thead><tr><th>nó</th><th>apoio</th><th class="num">Rx [kN]</th><th class="num">Ry [kN]</th></tr></thead><tbody><tr><td>B0</td><td>pin</td><td class="num">-8.000</td><td class="num">7.333</td></tr><tr><td>B3</td><td>roller</td><td class="num">—</td><td class="num">12.667</td></tr></tbody></table>
+
+<h2>Esforços normais nas barras</h2>
+<table><thead><tr><th>barra</th><th>nós</th><th class="num">L [m]</th><th class="num">N [kN]</th><th>estado</th></tr></thead><tbody><tr><td>B0B1</td><td>B0–B1</td><td class="num">2.000</td><td class="num tração">8.000</td><td class="tração">tração</td></tr><tr><td>B1B2</td><td>B1–B2</td><td class="num">2.000</td><td class="num tração">15.333</td><td class="tração">tração</td></tr><tr><td>B2B3</td><td>B2–B3</td><td class="num">2.000</td><td class="num tração">12.667</td><td class="tração">tração</td></tr><tr><td>T0T1</td><td>T0–T1</td><td class="num">2.000</td><td class="num compressão">-7.333</td><td class="compressão">compressão</td></tr><tr><td>T1T2</td><td>T1–T2</td><td class="num">2.000</td><td class="num compressão">-4.667</td><td class="compressão">compressão</td></tr><tr><td>T2T3</td><td>T2–T3</td><td class="num">2.000</td><td class="num tração">8.000</td><td class="tração">tração</td></tr><tr><td>B0T0</td><td>B0–T0</td><td class="num">2.000</td><td class="num compressão">-7.333</td><td class="compressão">compressão</td></tr><tr><td>B1T1</td><td>B1–T1</td><td class="num">2.000</td><td class="num compressão">-7.333</td><td class="compressão">compressão</td></tr><tr><td>B2T2</td><td>B2–T2</td><td class="num">2.000</td><td class="num tração">2.667</td><td class="tração">tração</td></tr><tr><td>B3T3</td><td>B3–T3</td><td class="num">2.000</td><td class="num força-zero">0.000</td><td class="força-zero">força zero</td></tr><tr><td>T0B1</td><td>T0–B1</td><td class="num">2.828</td><td class="num tração">10.371</td><td class="tração">tração</td></tr><tr><td>T1B2</td><td>T1–B2</td><td class="num">2.828</td><td class="num compressão">-3.771</td><td class="compressão">compressão</td></tr><tr><td>T2B3</td><td>T2–B3</td><td class="num">2.828</td><td class="num compressão">-17.913</td><td class="compressão">compressão</td></tr></tbody></table>
+<div class="meta">
+  <span>tração: <b>6</b></span>
+  <span>compressão: <b>6</b></span>
+  <span>força zero: <b>1</b></span>
+  <span>maior |N|: <b>17.913 kN</b></span>
+  <span>maior deslocamento: <b>129.780058 m</b></span>
+</div>
+
+<h2>Tensões normais (<span class="sigma">σ</span> = N/A)</h2>
+<p class="note">Informe a área da seção de cada barra para obter as tensões normais.</p>
+<h2>Barras de força zero</h2>
+<ul class="plain"><li><b>B3T3</b> — confirmado numericamente pelo solver (|N| ≈ 0)</li></ul>
+
+<h2>Verificações</h2>
+<table>
+<thead><tr><th>verificação</th><th class="num">valor</th><th>situação</th></tr></thead>
+<tbody>
+<tr><td>ΣFx (cargas + reações)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>ΣFy (cargas + reações)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>ΣM na origem</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+<tr><td>maior resíduo nodal (nó T2)</td>
+    <td class="num">0.000000</td>
+    <td>ok</td></tr>
+</tbody>
+</table>
+<p class="note">conferido pelo método dos nós: diferença máxima 0.000000 kN (dentro da tolerância).</p>
+
+<h2>Avisos</h2>
+<ul class="plain"><li>nó B1: barras B0B1 e B1B2 são colineares (sobrepostas na mesma reta).</li><li>nó B2: barras B1B2 e B2B3 são colineares (sobrepostas na mesma reta).</li><li>nó T1: barras T0T1 e T1T2 são colineares (sobrepostas na mesma reta).</li><li>nó T2: barras T1T2 e T2T3 são colineares (sobrepostas na mesma reta).</li></ul>
+
+<p class="note">Resíduos diferentes de zero na casa de 1e−15 são ruído de ponto
+flutuante, não erro de formulação. Os valores de esforço normal foram conferidos
+contra o método dos nós, que é um algoritmo independente do método da rigidez.</p>
+</body>
+</html>

@@ -1,0 +1,89 @@
+{
+  "name": "Triângulo isostático (caso canônico)",
+  "description": "Treliça triangular com pino em A, roleto em B e carga vertical em C. É o caso de referência com solução analítica exata: Ay = By = 5 kN, N_AB = 10/3 kN (tração) e N_AC = N_BC = -5√13/3 kN (compressão).",
+  "exercises": [
+    "equilíbrio externo",
+    "método dos nós",
+    "tração/compressão"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "C",
+        "x": 2.0,
+        "y": 3.0,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "AB",
+        "a": "A",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "AC",
+        "a": "A",
+        "b": "C",
+        "EA": 1.0
+      },
+      {
+        "id": "BC",
+        "a": "B",
+        "b": "C",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "C",
+        "Fx": 0.0,
+        "Fy": -10.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 3,
+      "b": 3,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "AB": 3.3333333333333335,
+      "AC": -6.009252125773315,
+      "BC": -6.009252125773315
+    },
+    "reactions": {
+      "A": {
+        "Rx": 4.440892098500626e-16,
+        "Ry": 5.0
+      },
+      "B": {
+        "Rx": 0.0,
+        "Ry": 5.000000000000001
+      }
+    },
+    "zeroForce": [],
+    "tolerance": 1e-06
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "Mecanismo interno com g = 0 (deve falhar com mensagem)",
+  "description": "Nó B no meio de dois pinos A e C, com apenas as barras AB e CB, ambas colineares. A contagem dá b + r = 2 + 4 = 6 = 2n, ou seja g = 0, mas B pode se deslocar verticalmente sem resistência de primeira ordem: a matriz de rigidez é singular. Prova que a contagem não garante estabilidade.",
+  "exercises": [
+    "caso de erro",
+    "mecanismo",
+    "limite da contagem b+r vs 2n"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B",
+        "x": 2.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "C",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "pin"
+      }
+    ],
+    "members": [
+      {
+        "id": "AB",
+        "a": "A",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "CB",
+        "a": "C",
+        "b": "B",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "B",
+        "Fx": 0.0,
+        "Fy": -5.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "error",
+    "errorCode": "mechanism"
+  }
+}

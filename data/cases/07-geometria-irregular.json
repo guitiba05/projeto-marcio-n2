@@ -1,0 +1,113 @@
+{
+  "name": "Geometria irregular (ângulos não triviais)",
+  "description": "Treliça com nós fora de alinhamento ortogonal: ângulos não triviais nos cossenos diretores e duas cargas inclinadas em nós distintos.",
+  "exercises": [
+    "cossenos diretores",
+    "decomposição de forças"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B",
+        "x": 5.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "C",
+        "x": 1.0,
+        "y": 3.0,
+        "support": "none"
+      },
+      {
+        "id": "D",
+        "x": 4.0,
+        "y": 2.0,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "AB",
+        "a": "A",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "AC",
+        "a": "A",
+        "b": "C",
+        "EA": 1.0
+      },
+      {
+        "id": "CD",
+        "a": "C",
+        "b": "D",
+        "EA": 1.0
+      },
+      {
+        "id": "DB",
+        "a": "D",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "AD",
+        "a": "A",
+        "b": "D",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "C",
+        "Fx": -4.0,
+        "Fy": -10.0
+      },
+      {
+        "node": "D",
+        "Fx": 3.0,
+        "Fy": -6.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 4,
+      "b": 5,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "AB": 2.8000000000000007,
+      "AC": -10.751744044572492,
+      "CD": 0.6324555320336759,
+      "DB": -6.260990336999414,
+      "AD": -0.4472135954999583
+    },
+    "reactions": {
+      "A": {
+        "Rx": 1.0,
+        "Ry": 10.4
+      },
+      "B": {
+        "Rx": 0.0,
+        "Ry": 5.6000000000000005
+      }
+    },
+    "zeroForce": [],
+    "tolerance": 1e-06
+  }
+}

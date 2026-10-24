@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defesa N2 — MdSolids Trusses (Treliças Planas)</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  :root {
+    --primary: #1e3a8a;
+    --primary-light: #3b82f6;
+    --primary-bg: #eff6ff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --bg-page: #0f172a;
+    --bg-slide: #ffffff;
+    --border-card: #e2e8f0;
+    --tension: #2563eb;
+    --compression: #dc2626;
+    --zero: #64748b;
+    --success: #166534;
+    --success-bg: #dcfce7;
+    --warning: #b45309;
+    --warning-bg: #fef3c7;
+    --danger: #991b1b;
+    --danger-bg: #fee2e2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* Barra de Progresso Superior */
+  #progress-bar {
+    height: 4px;
+    background-color: var(--primary-light);
+    width: 0%;
+    transition: width 0.25s ease-out;
+    z-index: 100;
+  }
+
+  /* Container Principal do Deck */
+  #presentation-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Slide 16:9 */
+  .slide {
+    display: none;
+    width: 100%;
+    max-width: 1200px;
+    aspect-ratio: 16 / 9;
+    max-height: calc(100vh - 80px);
+    background: var(--bg-slide);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    padding: 38px 48px;
+    position: relative;
+    overflow-y: auto;
+    animation: fadeIn 0.22s ease-in-out;
+  }
+
+  .slide.active {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Tipografia do Slide */
+  .slide-header {
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .slide-header h1 {
+    font-size: 26px;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .slide-header .tag {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--primary-bg);
+    color: var(--primary);
+  }
+
+  .slide-content {
+    flex: 1;
+    font-size: 16.5px;
+    line-height: 1.55;
+    color: var(--text-main);
+  }
+
+  /* Layout de Colunas */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  /* Cartões e Destaques */
+  .card {
+    background: #f8fafc;
+    border: 1px solid var(--border-card);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 15px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .highlight-box {
+    background: var(--primary-bg);
+    border-left: 4px solid var(--primary-light);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 15.5px;
+  }
+
+  .alert-box {
+    background: var(--warning-bg);
+    border-left: 4px solid var(--warning);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 15px;
+    color: #78350f;
+  }
+
+  .danger-box {
+    background: var(--danger-bg);
+    border-left: 4px solid var(--danger);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 15px;
+    color: #7f1d1d;
+  }
+
+  /* Badges de Cores dos Esforços */
+  .badge-tension {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .badge-compression {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .badge-zero {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* Tabelas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 10px 0;
+  }
+
+  th, td {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 600;
+  }
+
+  td.num, th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Fórmulas em Bloco */
+  .math-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-size: 17px;
+    text-align: center;
+    margin: 10px 0;
+    color: #0f172a;
+  }
+
+  .math-inline {
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+  }
+
+  /* Código */
+  code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    color: #0f172a;
+    font-family: ui-monospace, Consolas, monospace;
+  }
+
+  /* Barra de Navegação Inferior */
+  #footer-bar {
+    height: 52px;
+    background: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-nav {
+    background: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+
+  .btn-nav:hover {
+    background: #475569;
+  }
+
+  .slide-counter {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #f8fafc;
+    min-width: 65px;
+    text-align: center;
+  }
+
+  /* Capa Específica */
+  .slide-lead {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  }
+
+  .slide-lead h1 {
+    font-size: 38px;
+    color: var(--primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.03em;
+  }
+
+  .slide-lead h2 {
+    font-size: 22px;
+    color: var(--primary-light);
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+
+  .meta-tag {
+    display: inline-block;
+    background: #e2e8f0;
+    color: #334155;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 4px;
+  }
+
+  /* Estilos de Impressão (@media print) */
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  @media print {
+    body {
+      background: #ffffff !important;
+      overflow: visible !important;
+      height: auto !important;
+    }
+    #progress-bar, #footer-bar {
+      display: none !important;
+    }
+    #presentation-container {
+      display: block !important;
+      padding: 0 !important;
+    }
+    .slide {
+      display: flex !important;
+      max-width: 100% !important;
+      aspect-ratio: auto !important;
+      height: 100vh !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      box-shadow: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 24px 32px !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="presentation-container">
+
+  <!-- SLIDE 1: CAPA -->
+  <div class="slide slide-lead active" data-title="Capa">
+    <div style="margin-bottom: 12px;">
+      <span class="meta-tag">Mecânica dos Sólidos</span>
+      <span class="meta-tag">Avaliação N2</span>
+      <span class="meta-tag">Engenharia CEFSA</span>
+    </div>
+    <h1>Projeto MdSolids — Módulo Trusses</h1>
+    <h2>Modelagem Computacional, Solver Matricial e Verificação de Treliças Planas 2D</h2>
+    
+    <div style="background: white; border: 1px solid var(--border-card); border-radius: 10px; padding: 18px 28px; max-width: 650px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+      <p style="font-size: 15px; margin-bottom: 6px;"><b>Banca Examinadora:</b> Prof. Márcio</p>
+      <p style="font-size: 15px; margin-bottom: 6px;"><b>Parte 1: Apresentação Teórica Rigorosa:</b> Peso 4,0 Pontos</p>
+      <p style="font-size: 15px; color: var(--text-muted);"><b>Parte 2: Bateria de Testes Canônicos:</b> Peso 2,0 Pontos</p>
+    </div>
+
+    <p style="margin-top: 24px; font-size: 13.5px; color: var(--text-muted);">
+      Use as teclas <b>&larr; &rarr;</b> ou <b>Espaço</b> para navegar &bull; <b>F</b> para tela cheia
+    </p>
+  </div>
+
+  <!-- SLIDE 2: AGENDA DA DEFESA -->
+  <div class="slide" data-title="Agenda">
+    <div class="slide-header">
+      <h1>Dossiê de Defesa — Os 4 Pilares da Avaliação N2</h1>
+      <span class="tag">Estrutura</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid #2563eb;">
+          <div class="card-title">1. Obtenção dos Dados de Entrada</div>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">
+            Como a realidade física é capturada e transformada em grafo numérico.
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>Grade paramétrica (vãos e espaçamento horizontal/vertical).</li>
+            <li>Nós com deduplicação espacial e snap magnético.</li>
+            <li>Conectividade de barras, comprimento analítico e rigidez $EA$.</li>
+            <li>Apoios padronizados (pino, rolete vertical, rolete horizontal, livre).</li>
+            <li>Cargas nodais pontuais e conversão de cargas distribuídas na borda.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #059669;">
+          <div class="card-title">2. Tratamento no Software</div>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">
+            Arquitetura desacoplada e garantia de isolamento das contas.
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>Arquitetura 3 camadas: Core (Matemática pura) &harr; API REST &harr; Web SPA.</li>
+            <li>Zero dependência gráfica no solver de engenharia.</li>
+            <li>Base interna invariante: kN e metros (conversão de unidades na borda).</li>
+            <li>Interface com SVG reativo, snap magnético e inspetores ao vivo.</li>
+            <li>Auditoria contínua por 215 testes unitários e de integração.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #d97706;">
+          <div class="card-title">3. Conceitos Teóricos de Cálculo</div>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">
+            Fundamentação matemática e física exata (sem aproximações empíricas).
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>As 5 hipóteses fundamentais (H1 a H5) e o elemento de dois esforços.</li>
+            <li>Estaticidade: grau de indeterminação $g = b + r - 2n$.</li>
+            <li>Método da Rigidez Direta: matriz $k_e$ ($4 \times 4$), montagem global $K$ e solução.</li>
+            <li>Conferência independente cruzada: Método dos Nós e Ritter.</li>
+            <li>Barras de força zero (R1–R3), detecção espectral e tensões $\sigma = N/A$.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #dc2626;">
+          <div class="card-title">4. Apresentação e Interpretação dos Resultados</div>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">
+            Compreensão física dos fenômenos e auditoria do gabarito.
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>Tração positiva ($N > 0$) e compressão negativa ($N < 0$).</li>
+            <li>Comportamento esperado: banzos, diagonais e fluxo de forças.</li>
+            <li>Verificação dos 4 resíduos de equilíbrio estático ($< 10^{-14}$).</li>
+            <li>Gabarito dos 8 exercícios N2 e plano de contingência offline.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: CRITÉRIO 1 - OBTENÇÃO DE DADOS -->
+  <div class="slide" data-title="Critério 1: Entrada">
+    <div class="slide-header">
+      <h1>1. Obtenção dos Dados de Entrada — Malha e Nós</h1>
+      <span class="tag">Critério 1</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">1.1 Parametrização da Grade (`frmDefGrid`)</div>
+          <p style="font-size: 14.5px; margin-bottom: 10px;">
+            Fiel à ergonomia do MdSolids, a definição geométrica parte de uma grade paramétrica definida por:
+          </p>
+          <ul style="font-size: 14px; padding-left: 18px; line-height: 1.6; margin-bottom: 12px;">
+            <li>Número de vãos horizontais ($N_x$) e verticais ($N_y$).</li>
+            <li>Espaçamento entre linhas ($\Delta x$ e $\Delta y$).</li>
+            <li>Origem espacial $(x_0, y_0)$ e unidades de comprimento (m, mm, ft, in).</li>
+          </ul>
+
+          <div class="card-title">1.2 Snap Magnético e Deduplicação</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Para prevenir erros clássicos de modelagem (dois nós criados na mesma coordenada):
+          </p>
+          <div class="highlight-box">
+            <b>Raio de Captura Magnética:</b> Cliques do usuário a menos de $\delta = 14\,\text{px}$ são atraídos automaticamente para o vértice da grade mais próximo.
+            <br><b>Deduplicação Nodal:</b> Se uma coordenada $(x,y)$ já existe no grafo (tolerância $10^{-4}\,\text{m}$), o nó existente é reutilizado.
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; text-align: center;">
+          <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px;">Representação da Malha no Canvas Interativo</p>
+          <svg viewBox="0 0 400 240" width="100%" height="210" style="background: white; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <!-- Grid lines -->
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            
+            <!-- Nodes -->
+            <circle cx="80" cy="180" r="6" fill="#1e3a8a"/>
+            <text x="75" y="202" font-size="12" font-family="sans-serif" font-weight="bold">A (0,0)</text>
+            <polygon points="72,186 88,186 80,198" fill="#059669"/>
+            
+            <circle cx="320" cy="180" r="6" fill="#1e3a8a"/>
+            <text x="315" y="202" font-size="12" font-family="sans-serif" font-weight="bold">B (4,0)</text>
+            <circle cx="320" cy="192" r="5" fill="#059669"/>
+
+            <circle cx="200" cy="60" r="6" fill="#1e3a8a"/>
+            <text x="195" y="50" font-size="12" font-family="sans-serif" font-weight="bold">C (2,3)</text>
+            <!-- Load arrow -->
+            <line x1="200" y1="20" x2="200" y2="52" stroke="#7c3aed" stroke-width="3" marker-end="url(#arrow)"/>
+            <polygon points="196,50 204,50 200,58" fill="#7c3aed"/>
+            <text x="210" y="36" font-size="12" font-family="sans-serif" font-weight="bold" fill="#7c3aed">Fy = -10 kN</text>
+
+            <!-- Bars -->
+            <line x1="80" y1="180" x2="320" y2="180" stroke="#2563eb" stroke-width="3.5"/>
+            <line x1="80" y1="180" x2="200" y2="60" stroke="#dc2626" stroke-width="4.5"/>
+            <line x1="320" y1="180" x2="200" y2="60" stroke="#dc2626" stroke-width="4.5"/>
+          </svg>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Treliça canônica construída com snap em 3 cliques de mouse.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: CRITÉRIO 1 - APOIOS E CARGAS -->
+  <div class="slide" data-title="Critério 1: Vínculos e Cargas">
+    <div class="slide-header">
+      <h1>1. Obtenção dos Dados de Entrada — Vínculos e Cargas</h1>
+      <span class="tag">Critério 1</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">1.3 Vínculos de Apoio Padronizados</div>
+          <table style="margin-top: 6px;">
+            <thead>
+              <tr>
+                <th>Tipo de Apoio</th>
+                <th>Graus Restringidos</th>
+                <th>Reações Fornecidas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Articulação Fixa (`pin`)</b></td>
+                <td>$u_x = 0$ e $u_y = 0$</td>
+                <td>$2$ reações ($R_x$ e $R_y$)</td>
+              </tr>
+              <tr>
+                <td><b>Rolete Horizontal (`roller`)</b></td>
+                <td>$u_y = 0$ ($u_x$ livre)</td>
+                <td>$1$ reação vertical ($R_y$)</td>
+              </tr>
+              <tr>
+                <td><b>Rolete Vertical (`roller_x`)</b></td>
+                <td>$u_x = 0$ ($u_y$ livre)</td>
+                <td>$1$ reação horizontal ($R_x$)</td>
+              </tr>
+              <tr>
+                <td><b>Nó Livre (`none`)</b></td>
+                <td>Nenhum vínculo</td>
+                <td>$0$ reações</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="alert-box" style="margin-top: 14px;">
+            <b>Engaste não é permitido:</b> Em conformidade com a hipótese H1 (barras biarticuladas com rótulas perfeitas), apoios engastados que restrinjam rotação nodal gerariam momento fletor secundário e são rejeitados pelo modelo.
+          </div>
+        </div>
+
+        <div>
+          <div class="card-title">1.4 Cargas Nodais Pontuais e Distribuídas</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            A hipótese H2 impõe que as forças externas atuem <b>exclusivamente nos nós</b>:
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6; margin-bottom: 12px;">
+            <li>Vetores pontuais $(F_x, F_y)$ com sinal cartesiano (positivo para direita e para cima).</li>
+            <li>Cargas fora de nó são bloqueadas pelo software com mensagem explícita.</li>
+          </ul>
+
+          <div class="card" style="background: white; border-left: 4px solid #7c3aed;">
+            <div class="card-title" style="color: #7c3aed;">Conversão de Cargas Distribuídas (Ex: Caso 02)</div>
+            <p style="font-size: 13.5px; color: var(--text-main);">
+              Em coberturas (treliça de telhado Pratt), a carga contínua de telhas e vento $q\,[\text{kN/m}]$ sobre os banzos é pré-integrada por área de influência e transferida aos nós superiores:
+              $$F_i = q \cdot \frac{L_{i-1} + L_i}{2}$$
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: CRITÉRIO 2 - ARQUITETURA DE SOFTWARE -->
+  <div class="slide" data-title="Critério 2: Arquitetura">
+    <div class="slide-header">
+      <h1>2. Tratamento no Software — Arquitetura 3 Camadas</h1>
+      <span class="tag">Critério 2</span>
+    </div>
+    <div class="slide-content">
+      <p style="font-size: 14.5px; margin-bottom: 14px;">
+        Para assegurar <b>reprodutibilidade científica e desacoplamento absoluto</b>, a aplicação foi desenhada em três camadas independentes:
+      </p>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid #2563eb;">
+          <div class="card-title">Camada 1: Web SPA (Cliente)</div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Interface gráfica leve e moderna em Vanilla JS, CSS3 e SVG interativo.
+          </p>
+          <ul style="font-size: 12.5px; padding-left: 16px; line-height: 1.5;">
+            <li>Zero dependência de build pesado (sem npm ou webpack).</li>
+            <li>Desenho de barras por clique e arraste com rubberband.</li>
+            <li>Painel inspetor reativo de nós e barras.</li>
+            <li>Modos de visualização de esforços e tensões normais.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #059669;">
+          <div class="card-title">Camada 2: API REST (FastAPI)</div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Serviço HTTP de alta velocidade expondo endpoints matemáticos:
+          </p>
+          <ul style="font-size: 12.5px; padding-left: 16px; line-height: 1.5;">
+            <li><code>POST /api/solve</code>: cálculo estrutural completo.</li>
+            <li><code>POST /api/stress</code>: dimensionamento inverso.</li>
+            <li><code>POST /api/report</code>: relatório técnico HTML A4.</li>
+            <li><code>GET /api/presets</code>: gabaritos oficiais.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #7c3aed;">
+          <div class="card-title">Camada 3: Core Matemático</div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Núcleo em Python puro (`app/core/`) com NumPy:
+          </p>
+          <ul style="font-size: 12.5px; padding-left: 16px; line-height: 1.5;">
+            <li>Matriz de rigidez 2D e rotação de coordenadas.</li>
+            <li>Decomposição espectral de autovalores de $K_{ff}$.</li>
+            <li>Conferência cruzada pelo Método dos Nós.</li>
+            <li>Verificação quádrupla de resíduos estáticos.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 14px;">
+        <b>Princípio de Segurança Estrutural:</b> O frontend <b>não executa nenhum cálculo de engenharia</b>. Ele apenas exibe e coleta dados. Isso impede desvios de arredondamento e garante que os resultados da tela sejam rigorosamente auditáveis pelo backend.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: CRITÉRIO 2 - TRATAMENTO DE UNIDADES E ROBUSTEZ -->
+  <div class="slide" data-title="Critério 2: Unidades e Testes">
+    <div class="slide-header">
+      <h1>2. Tratamento no Software — Isolamento e Robustez</h1>
+      <span class="tag">Critério 2</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">2.1 Sistema de Unidades Invariante na Borda</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            A causa primária de falhas em softwares estruturais é a mistura inadvertida de unidades no interior dos laços de cálculo.
+          </p>
+          <div class="card" style="background: white;">
+            <p style="font-size: 13.5px; line-height: 1.6;">
+              &bull; <b>Entrada:</b> aceita kN, N, kgf, tf, kip, lbf &bull; m, mm, cm, ft, in.<br>
+              &bull; <b>Base Interna:</b> convertida instantaneamente para <b>kN</b> (força), <b>m</b> (comprimento), <b>mm²</b> (área) e <b>MPa</b> (tensão).<br>
+              &bull; <b>Saída:</b> reconvertida com precisão para a unidade exigida pelo usuário.
+            </p>
+          </div>
+
+          <div class="card-title" style="margin-top: 10px;">2.2 Tratamento do Símbolo Grego &sigma;</div>
+          <p style="font-size: 13.5px; color: var(--text-muted);">
+            No Windows (CP1252), a impressão no terminal de caracteres Unicode como &Sigma; ou &sigma; causa `UnicodeEncodeError`. Implementamos salvaguarda universal via `sys.stdout.reconfigure(encoding='utf-8')` e fontes seguras na interface.
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">2.3 Cobertura Automatizada de Testes (215 Testes)</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            A suíte `pytest` audita integralmente o comportamento do sistema:
+          </p>
+          <table style="font-size: 12.5px;">
+            <thead>
+              <tr>
+                <th>Módulo de Teste</th>
+                <th>Escopo Auditado</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>`test_cases.py`</td>
+                <td>Gabarito dos 12 casos canônicos</td>
+                <td><span class="badge-tension">100% OK</span></td>
+              </tr>
+              <tr>
+                <td>`test_stiffness.py`</td>
+                <td>Simetria, posto 1 e independ. de EA</td>
+                <td><span class="badge-tension">100% OK</span></td>
+              </tr>
+              <tr>
+                <td>`test_stress.py`</td>
+                <td>Tensões normais e dimensionamento</td>
+                <td><span class="badge-tension">100% OK</span></td>
+              </tr>
+              <tr>
+                <td>`test_zero_force.py`</td>
+                <td>Regras R1, R2 e R3 analíticas</td>
+                <td><span class="badge-tension">100% OK</span></td>
+              </tr>
+              <tr>
+                <td>`test_api.py`</td>
+                <td>Rotas REST e geração de relatórios</td>
+                <td><span class="badge-tension">100% OK</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size: 13px; color: var(--success); font-weight: 600; margin-top: 8px;">
+            &check; 215 passed em 0.84s com 0 falhas e resíduos menores que 10<sup>-14</sup>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: CRITÉRIO 3 - AS 5 HIPÓTESES FUNDAMENTAIS -->
+  <div class="slide" data-title="Critério 3: Hipóteses H1-H5">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — As 5 Hipóteses Fundamentais</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <p style="font-size: 14px; margin-bottom: 12px;">
+        Uma treliça real na engenharia civil ou mecânica é composta por perfis de aço soldados ou parafusados. O modelo analítico simplifica a estrutura através de 5 hipóteses essenciais:
+      </p>
+
+      <table style="font-size: 13px;">
+        <thead>
+          <tr>
+            <th style="width: 8%;">#</th>
+            <th style="width: 28%;">Hipótese Adotada</th>
+            <th style="width: 32%;">Efeito Físico Eliminado</th>
+            <th style="width: 32%;">Consequência no Modelo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>H1</b></td>
+            <td><b>Barras Biarticuladas</b> (rótulas sem atrito nas pontas)</td>
+            <td>Transmissão de momento fletor ($M = 0$) e cortante ($V = 0$)</td>
+            <td>Cada barra é um <b>elemento de dois esforços</b> solicitado puramente por força axial ($N$).</td>
+          </tr>
+          <tr>
+            <td><b>H2</b></td>
+            <td><b>Cargas Aplicadas Apenas nos Nós</b></td>
+            <td>Flexão local ao longo do vão da barra</td>
+            <td>O esforço normal $N$ é estritamente <b>constante em toda a extensão</b> da barra.</td>
+          </tr>
+          <tr>
+            <td><b>H3</b></td>
+            <td><b>Material Elástico-Linear</b> ($\sigma = E \cdot \varepsilon$)</td>
+            <td>Plastificação, escoamento e histerese não linear</td>
+            <td>Relação de Hooke válida: $\Delta L = \frac{N L}{E A}$. A rigidez axial é constante.</td>
+          </tr>
+          <tr>
+            <td><b>H4</b></td>
+            <td><b>Pequenas Deformações</b> ($\Delta L \ll L$)</td>
+            <td>Alteração significativa da geometria deformada</td>
+            <td>As equações de equilíbrio estático são escritas na <b>geometria indeformada</b> inicial.</td>
+          </tr>
+          <tr>
+            <td><b>H5</b></td>
+            <td><b>Treliça Plana 2D no Plano $xy$</b></td>
+            <td>Esforços tridimensionais fora do plano</td>
+            <td>Cada nó possui exatamente <b>2 graus de liberdade</b> translacionais ($u_x, u_y$).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight-box" style="margin-top: 10px;">
+        <b>Conclusão Teórica:</b> A conjunção de H1 e H2 assegura que o problema estrutural seja governado por um sistema de equações puramente lineares, resolvível deterministicamente via álgebra matricial.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: CRITÉRIO 3 - ESTATICIDADE E DETERMINISMO -->
+  <div class="slide" data-title="Critério 3: Estaticidade">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Estaticidade e Determinismo</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.1 Equações de Equilíbrio e Incógnitas</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Em uma treliça plana com $n$ nós, dispomos de 2 equações de equilíbrio por nó:
+          </p>
+          <div class="math-block">
+            $$\sum F_{ix} = 0 \quad \text{e} \quad \sum F_{iy} = 0 \implies 2n \text{ equações independentes}$$
+          </div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            As incógnitas totais do problema físico são:
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>$b$ esforços normais internos nas barras.</li>
+            <li>$r$ reações externas nos vínculos de apoio.</li>
+          </ul>
+
+          <div class="math-block" style="background: var(--primary-bg); font-weight: bold;">
+            Grau de Indeterminação Estática: $g = b + r - 2n$
+          </div>
+        </div>
+
+        <div>
+          <div class="card-title">3.2 Classificação Estrutural</div>
+          <table style="font-size: 13px;">
+            <thead>
+              <tr>
+                <th>Grau $g$</th>
+                <th>Classificação</th>
+                <th>Comportamento Físico</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>$g < 0$</td>
+                <td><b style="color: #dc2626;">Hipostática</b></td>
+                <td>Mecanismo cinemático instável. Faltam vínculos; não há equilíbrio.</td>
+              </tr>
+              <tr>
+                <td>$g = 0$</td>
+                <td><b style="color: #2563eb;">Isostática</b></td>
+                <td>Determinada. As equações da estática bastam; <b>$N$ independe de $EA$</b>.</td>
+              </tr>
+              <tr>
+                <td>$g > 0$</td>
+                <td><b style="color: #7c3aed;">Hiperestática</b></td>
+                <td>Indeterminada. Sobram vínculos; <b>$N$ depende da rigidez relativa $EA$</b>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="danger-box" style="margin-top: 14px;">
+            <b>Pegadinha Clássica da Banca:</b> A contagem $b + r = 2n$ ($g = 0$) é <b>condição necessária, mas NÃO suficiente</b>!
+            <br>Se as barras estiverem mal dispostas no espaço (ex: nós colineares sem triangulação), a estrutura forma um <i>mecanismo interno</i> com $g=0$ (ex: Caso 10).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: CRITÉRIO 3 - MÉTODO DA RIGIDEZ DIRETA -->
+  <div class="slide" data-title="Critério 3: Rigidez Direta">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Método da Rigidez Direta</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.3 Cinemática e Esforço Normal na Barra</div>
+          <p style="font-size: 13.5px; line-height: 1.5; margin-bottom: 8px;">
+            Seja uma barra orientada do nó $A(x_a, y_a)$ ao nó $B(x_b, y_b)$, com versor diretor $\hat{n} = (c, s)$:
+            $$c = \cos\theta = \frac{x_b - x_a}{L}, \quad s = \sin\theta = \frac{y_b - y_a}{L}$$
+          </p>
+          <p style="font-size: 13.5px; line-height: 1.5; margin-bottom: 8px;">
+            O alongamento elástico $\Delta L$ é a projeção dos deslocamentos nodais:
+            $$\Delta L = (u_{bx} - u_{ax})c + (u_{by} - u_{ay})s = \mathbf{T}_e \mathbf{u}_e$$
+          </p>
+          <div class="math-block" style="background: white;">
+            $$N = \frac{EA}{L} \Delta L = \frac{EA}{L} \begin{bmatrix} -c & -s & c & s \end{bmatrix} \begin{Bmatrix} u_{ax} \\ u_{ay} \\ u_{bx} \\ u_{by} \end{Bmatrix}$$
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted);">
+            Se $\Delta L > 0 \implies N > 0$ (<span class="badge-tension">Tração</span>). Se $\Delta L < 0 \implies N < 0$ (<span class="badge-compression">Compressão</span>).
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">3.4 Matriz de Rigidez do Elemento ($4 \times 4$)</div>
+          <p style="font-size: 13.5px; line-height: 1.5; margin-bottom: 6px;">
+            Transformando as forças nodais para o referencial global ($k_e = \mathbf{T}_e^T k_{\text{local}} \mathbf{T}_e$):
+          </p>
+          <div class="math-block" style="font-size: 15px; padding: 8px;">
+            $$k_e = \frac{EA}{L} \begin{bmatrix}
+             c^2  &  cs & -c^2 & -cs \\
+             cs   &  s^2 & -cs & -s^2 \\
+            -c^2  & -cs &  c^2 &  cs \\
+            -cs   & -s^2 &  cs &  s^2
+            \end{bmatrix}$$
+          </div>
+          <div class="card" style="font-size: 13px; line-height: 1.5;">
+            <b>3 Propriedades Físicas Fundamentais de $k_e$:</b>
+            <br>1. <b>Simétrica:</b> $k_{ij} = k_{ji}$ (Reciprocidade de Maxwell-Betti).
+            <br>2. <b>Posto 1:</b> Possui apenas 1 autovalor não nulo ($\lambda = 2EA/L$). A barra só deforma na direção axial.
+            <br>3. <b>Modos Rígidos:</b> 3 autovalores nulos representam translações e rotações puras sem tensão ($k_e \cdot \mathbf{u}_{\text{trans}} = \mathbf{0}$).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: CRITÉRIO 3 - MONTAGEM GLOBAL E SOLUÇÃO -->
+  <div class="slide" data-title="Critério 3: Montagem Global">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Montagem Global e Partição</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.5 Montagem da Matriz Global $K$ ($2n \times 2n$)</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Cada nó $i$ aloca os graus de liberdade $2i$ ($u_x$) e $2i+1$ ($u_y$). A rigidez de cada barra é somada nas posições globais correspondentes:
+          </p>
+          <div class="math-block">
+            $$\mathbf{K}_{\text{global}} = \sum_{e=1}^{b} \mathbf{L}_e^T k_e \mathbf{L}_e$$
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-muted);">
+            Onde $\mathbf{L}_e$ é a matriz booleana de conectividade topológica que mapeia os 4 GDL locais nos $2n$ GDL globais da estrutura.
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">3.6 Partição e Condições de Contorno</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Separando os GDL livres ($f$) e os restringidos pelos apoios ($s$):
+          </p>
+          <div class="math-block">
+            $$\begin{bmatrix} \mathbf{K}_{ff} & \mathbf{K}_{fs} \\ \mathbf{K}_{sf} & \mathbf{K}_{ss} \end{bmatrix} \begin{Bmatrix} \mathbf{u}_f \\ \mathbf{u}_s \end{Bmatrix} = \begin{Bmatrix} \mathbf{F}_f \\ \mathbf{F}_s + \mathbf{R} \end{Bmatrix}$$
+          </div>
+          <p style="font-size: 13.5px; line-height: 1.6;">
+            Como os apoios impõem $\mathbf{u}_s = \mathbf{0}$:<br>
+            1. <b>Deslocamentos Nodais:</b> $\mathbf{u}_f = \mathbf{K}_{ff}^{-1} \mathbf{F}_f$<br>
+            2. <b>Reações de Apoio Exatas:</b> $\mathbf{R} = \mathbf{K}_{sf} \mathbf{u}_f - \mathbf{F}_s$
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 14px;">
+        <b>Aplicação no Triângulo Canônico (Caso 01):</b><br>
+        Com $\mathbf{F}_f = [0, 0, -10]^T\,\text{kN}$, o sistema $3 \times 3$ particionado resulta em:
+        $u_{Bx} = +13.33\,\text{m}$, $u_{Cx} = +6.67\,\text{m}$, $u_{Cy} = -30.48\,\text{m}$ (para $EA=1\,\text{kN}$).
+        As reações resultam exatamente $R_{Ax} = 0.00\,\text{kN}$, $R_{Ay} = +5.00\,\text{kN}$ e $R_{By} = +5.00\,\text{kN}$.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: CRITÉRIO 3 - DETECÇÃO ESPECTRAL DE MECANISMOS -->
+  <div class="slide" data-title="Critério 3: Mecanismos">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Detecção Espectral de Mecanismos</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.7 O Problema da Singularidade Matricial</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Quando uma estrutura possui um movimento de corpo rígido interno ou apoio insuficiente:
+          </p>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6; margin-bottom: 12px;">
+            <li>A submatriz $\mathbf{K}_{ff}$ torna-se <b>singular (det $\mathbf{K}_{ff} = 0$)</b>.</li>
+            <li>Solvers comerciais mal protegidos tentam divisão por pivô nulo, gerando falhas fatais (`crash`) ou deslocamentos espúrios de $10^{16}\,\text{m}$.</li>
+          </ul>
+
+          <div class="card-title">3.8 Decomposição Espectral Prévia</div>
+          <p style="font-size: 13.5px; line-height: 1.6;">
+            Antes de inverter $\mathbf{K}_{ff}$, nosso solver calcula seus <b>autovalores e autovetores</b>:
+            $$\mathbf{K}_{ff} \mathbf{\phi}_i = \lambda_i \mathbf{\phi}_i$$
+            Se $\min(\lambda_i) < 10^{-9}$, existe modo cinemático livre. O autovetor $\mathbf{\phi}$ aponta os GDL que se movem livremente.
+          </p>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-card); border-radius: 8px; padding: 14px;">
+          <div class="card-title" style="color: #dc2626;">Caso 10 — Mecanismo Interno com $g = 0$</div>
+          
+          <svg viewBox="0 0 360 160" width="100%" height="130" style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 6px;">
+            <!-- Pino A -->
+            <polygon points="50,110 70,110 60,95" fill="#059669"/>
+            <circle cx="60" cy="95" r="5" fill="#1e3a8a"/>
+            <text x="45" y="85" font-size="12" font-weight="bold">A (0,0)</text>
+
+            <!-- Pino C -->
+            <polygon points="290,110 310,110 300,95" fill="#059669"/>
+            <circle cx="300" cy="95" r="5" fill="#1e3a8a"/>
+            <text x="290" y="85" font-size="12" font-weight="bold">C (4,0)</text>
+
+            <!-- Nó livre B (colinear) -->
+            <circle cx="180" cy="95" r="6" fill="#dc2626"/>
+            <text x="175" y="85" font-size="12" font-weight="bold" fill="#dc2626">B (2,0)</text>
+
+            <!-- Barras -->
+            <line x1="60" y1="95" x2="180" y2="95" stroke="#475569" stroke-width="3"/>
+            <line x1="180" y1="95" x2="300" y2="95" stroke="#475569" stroke-width="3"/>
+
+            <!-- Seta de deslocamento vertical livre em B -->
+            <line x1="180" y1="95" x2="180" y2="135" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="3,3"/>
+            <polygon points="176,132 184,132 180,140" fill="#dc2626"/>
+            <text x="190" y="125" font-size="11" font-weight="bold" fill="#dc2626">Modo Livre: B.uy</text>
+          </svg>
+
+          <p style="font-size: 12.5px; color: var(--text-main); margin-top: 8px;">
+            <b>Diagnóstico do Software:</b> $b+r = 2+4 = 6 = 2n \implies g = 0$.<br>
+            A submatriz $\mathbf{K}_{ff}$ tem ordem $2 \times 2$. O autovalor vertical associado a $B.u_y$ é $\lambda = 0.000$. O programa recusa o cálculo com a mensagem: <i>"Mecanismo interno detectado no GDL [B.uy]"</i>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: CRITÉRIO 3 - CONFERÊNCIA CRUZADA -->
+  <div class="slide" data-title="Critério 3: Validação Cruzada">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Validação Cruzada dos Nós</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.9 Método dos Nós Matricial Independente</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Para validar os esforços calculados pela rigidez, o software monta um sistema alternativo independente:
+          </p>
+          <div class="math-block">
+            $$\mathbf{A}_{\text{geom}} \begin{bmatrix} \mathbf{N} \\ \mathbf{R} \end{bmatrix} = -\mathbf{F}_{\text{aplicadas}}$$
+          </div>
+          <ul style="font-size: 13.5px; padding-left: 18px; line-height: 1.6;">
+            <li>$\mathbf{A}_{\text{geom}}$ é montada diretamente pelas componentes dos cossenos diretores ($c_{ij}, s_{ij}$) de cada nó.</li>
+            <li><b>Totalmente Desacoplada:</b> Esta formulação <b>não utiliza a rigidez $EA$ nem calcula deslocamentos</b>.</li>
+          </ul>
+
+          <div class="card-title" style="margin-top: 10px;">3.10 Método das Seções (Ritter)</div>
+          <p style="font-size: 13.5px; color: var(--text-muted);">
+            Aplicado para conferência de barras internas de banzos e diagonais através de seções transversais completas de corte, como realizado no Caso 05 com concordância idêntica ($N_{CD} = 0$, $N_{AC} = +7.5\,\text{kN}$).
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">3.11 Auditoria de Concordância em Todos os Casos</div>
+          <div class="card" style="background: white;">
+            <p style="font-size: 13.5px; line-height: 1.6; margin-bottom: 8px;">
+              Diferença máxima $|\Delta N| = |N_{\text{rigidez}} - N_{\text{nós}}|$ aferida pelo sistema:
+            </p>
+            <table style="font-size: 12.5px;">
+              <thead>
+                <tr>
+                  <th>Caso de Teste</th>
+                  <th>Diferença Absoluta Máxima</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>01-triangulo</td>
+                  <td class="num">0.000 &times; 10<sup>0</sup> kN</td>
+                  <td><span class="badge-tension">Idêntico</span></td>
+                </tr>
+                <tr>
+                  <td>02-telhado-pratt</td>
+                  <td class="num">1.421 &times; 10<sup>-14</sup> kN</td>
+                  <td><span class="badge-tension">Idêntico</span></td>
+                </tr>
+                <tr>
+                  <td>03-warren</td>
+                  <td class="num">1.066 &times; 10<sup>-14</sup> kN</td>
+                  <td><span class="badge-tension">Idêntico</span></td>
+                </tr>
+                <tr>
+                  <td>05-forca-zero-T</td>
+                  <td class="num">3.553 &times; 10<sup>-15</sup> kN</td>
+                  <td><span class="badge-tension">Idêntico</span></td>
+                </tr>
+                <tr>
+                  <td>12-pratt-grande</td>
+                  <td class="num">1.634 &times; 10<sup>-13</sup> kN</td>
+                  <td><span class="badge-tension">Idêntico</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+              *Discrepâncias da ordem de 10<sup>-14</sup> correspondem exclusivamente à precisão do ponto flutuante de 64 bits (IEEE 754).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: CRITÉRIO 3 - BARRAS DE FORÇA ZERO -->
+  <div class="slide" data-title="Critério 3: Força Zero">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Barras de Força Zero</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <p style="font-size: 14px; margin-bottom: 12px;">
+        Barras de força zero ($N = 0$) são detectadas geometricamente através das três regras clássicas nos <b>nós descarregados e sem apoios</b>:
+      </p>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid var(--zero);">
+          <div class="card-title">Regra R1 (1 Barra)</div>
+          <p style="font-size: 13px; line-height: 1.5; margin-bottom: 8px;">
+            Nó livre onde chega apenas uma barra:
+            $$\sum \vec{F} = N \cdot \hat{n} = \mathbf{0} \implies N = 0$$
+          </p>
+          <div style="text-align: center; padding: 6px; background: white; border-radius: 4px;">
+            <svg viewBox="0 0 120 60" width="100" height="50">
+              <circle cx="20" cy="30" r="4" fill="#0f172a"/>
+              <circle cx="100" cy="30" r="5" fill="#64748b"/>
+              <line x1="20" y1="30" x2="100" y2="30" stroke="#94a3b8" stroke-dasharray="4,4" stroke-width="2.5"/>
+              <text x="50" y="22" font-size="11" fill="#64748b" font-weight="bold">N = 0</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--zero);">
+          <div class="card-title">Regra R2 (2 Barras)</div>
+          <p style="font-size: 13px; line-height: 1.5; margin-bottom: 8px;">
+            Nó descarregado com 2 barras não colineares:
+            $$\sum F_x = 0, \, \sum F_y = 0 \implies N_1 = N_2 = 0$$
+          </p>
+          <div style="text-align: center; padding: 6px; background: white; border-radius: 4px;">
+            <svg viewBox="0 0 120 60" width="100" height="50">
+              <circle cx="60" cy="15" r="5" fill="#64748b"/>
+              <circle cx="20" cy="50" r="4" fill="#0f172a"/>
+              <circle cx="100" cy="50" r="4" fill="#0f172a"/>
+              <line x1="20" y1="50" x2="60" y2="15" stroke="#94a3b8" stroke-dasharray="4,4" stroke-width="2.5"/>
+              <line x1="100" y1="50" x2="60" y2="15" stroke="#94a3b8" stroke-dasharray="4,4" stroke-width="2.5"/>
+              <text x="50" y="45" font-size="11" fill="#64748b" font-weight="bold">N1=N2=0</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--zero);">
+          <div class="card-title">Regra R3 (3 Barras)</div>
+          <p style="font-size: 13px; line-height: 1.5; margin-bottom: 8px;">
+            Nó descarregado com 3 barras, sendo duas colineares: a 3ª barra tem $N_3 = 0$.
+          </p>
+          <div style="text-align: center; padding: 6px; background: white; border-radius: 4px;">
+            <svg viewBox="0 0 120 60" width="100" height="50">
+              <line x1="15" y1="45" x2="105" y2="45" stroke="#2563eb" stroke-width="2.5"/>
+              <circle cx="60" cy="45" r="4" fill="#0f172a"/>
+              <line x1="60" y1="45" x2="60" y2="10" stroke="#94a3b8" stroke-dasharray="4,4" stroke-width="2.5"/>
+              <circle cx="60" cy="10" r="4" fill="#0f172a"/>
+              <text x="66" y="28" font-size="11" fill="#64748b" font-weight="bold">N3=0</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 14px;">
+        <b>Por que barras de força zero não podem ser descartadas da treliça?</b>
+        <br>Embora $N = 0$ para um dado carregamento estático, a barra possui rigidez ($EA$) e é <b>indispensável para travar o comprimento de flambagem dos banzos adjacentes</b> e garantir que a estrutura não se torne um mecanismo caso ocorra uma carga acidental de vento ou manutenção.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: CRITÉRIO 3 - TENSÕES E DIMENSIONAMENTO -->
+  <div class="slide" data-title="Critério 3: Tensões e Dimensionamento">
+    <div class="slide-header">
+      <h1>3. Conceitos Teóricos — Tensões e Dimensionamento Inverso</h1>
+      <span class="tag">Critério 3</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">3.12 Tensão Normal Axial ($\sigma = N / A$)</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Pela hipótese H1 (solicitação axial uniforme na seção transversal):
+          </p>
+          <div class="math-block">
+            $$\sigma = \frac{N}{A} \quad [\text{MPa}] = \frac{N\,[\text{kN}] \times 10^3}{A\,[\text{mm}^2]}$$
+          </div>
+          <p style="font-size: 13.5px; line-height: 1.6;">
+            &bull; $\sigma > 0$: Tensão Normal de <span class="badge-tension">Tração</span>.<br>
+            &bull; $\sigma < 0$: Tensão Normal de <span class="badge-compression">Compressão</span>.<br>
+            &bull; A barra crítica é a de <b>maior $|\sigma|$</b> (não necessariamente o maior $|N|$ se as áreas forem diferentes).
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">3.13 Dimensionamento Inverso ($A_{\text{req}}$)</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Dada a tensão admissível do material escolhido ($\sigma_{\text{adm}}$):
+          </p>
+          <div class="math-block">
+            $$A_{\text{req}} = \frac{|N|}{\sigma_{\text{adm}}} \quad [\text{mm}^2]$$
+          </div>
+          <p style="font-size: 13.5px; line-height: 1.6;">
+            &bull; <b>Taxa de Utilização:</b> $u = |\sigma| / \sigma_{\text{adm}} \le 1.0$ (Seguro).<br>
+            &bull; <b>Limites Assimétricos:</b> Suporta valores distintos para tração e compressão (materiais frágeis como concreto/ferro fundido).
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="background: white; margin-top: 14px;">
+        <div class="card-title">Exemplo Resolvido: Triângulo Canônico ($A = 100\,\text{mm}^2$, $\sigma_{\text{adm}} = 50\,\text{MPa}$)</div>
+        <table style="font-size: 13px;">
+          <thead>
+            <tr>
+              <th>Barra</th>
+              <th class="num">Esforço Normal $N$</th>
+              <th class="num">Área Fornecida $A$</th>
+              <th class="num">Tensão $\sigma$</th>
+              <th class="num">Área Requerida $A_{\text{req}}$</th>
+              <th>Avaliação ($\sigma_{\text{adm}} = 50\,\text{MPa}$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>AB</b> (banzo inferior)</td>
+              <td class="num">+3.333 kN</td>
+              <td class="num">100 mm²</td>
+              <td class="num" style="color: #2563eb; font-weight: bold;">+33.33 MPa</td>
+              <td class="num">66.67 mm²</td>
+              <td><span class="badge-tension">Atende ($u = 67\%$)</span></td>
+            </tr>
+            <tr>
+              <td><b>AC</b> (diagonal esq.)</td>
+              <td class="num">-6.009 kN</td>
+              <td class="num">100 mm²</td>
+              <td class="num" style="color: #dc2626; font-weight: bold;">-60.09 MPa</td>
+              <td class="num">120.19 mm²</td>
+              <td><span class="badge-compression">Sobrecarga ($u = 120\%$)</span></td>
+            </tr>
+            <tr>
+              <td><b>BC</b> (diagonal dir.)</td>
+              <td class="num">-6.009 kN</td>
+              <td class="num">100 mm²</td>
+              <td class="num" style="color: #dc2626; font-weight: bold;">-60.09 MPa</td>
+              <td class="num">120.19 mm²</td>
+              <td><span class="badge-compression">Sobrecarga ($u = 120\%$)</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+          *A seção mínima uniforme para a treliça inteira deve ser $A \ge 120.19\,\text{mm}^2$, governada pelas diagonais comprimidas.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: CRITÉRIO 4 - RESULTADOS E RESÍDUOS -->
+  <div class="slide" data-title="Critério 4: Resíduos e Equilíbrio">
+    <div class="slide-header">
+      <h1>4. Apresentação e Interpretação dos Resultados</h1>
+      <span class="tag">Critério 4</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-2">
+        <div>
+          <div class="card-title">4.1 Auditoria do Equilíbrio Estático Global</div>
+          <p style="font-size: 14px; margin-bottom: 8px;">
+            Todo caso resolvido pelo solver passa por quatro testes de equilíbrio absoluto:
+          </p>
+          <div class="card" style="background: white; font-size: 13.5px; line-height: 1.6;">
+            1. <b>Forças Horizontais:</b> $|\sum F_x + \sum R_x| < 10^{-14}\,\text{kN}$<br>
+            2. <b>Forças Verticais:</b> $|\sum F_y + \sum R_y| < 10^{-14}\,\text{kN}$<br>
+            3. <b>Momento na Origem:</b> $|\sum M_{(0,0)}| < 10^{-14}\,\text{kN}\cdot\text{m}$<br>
+            4. <b>Resíduo Nodal Máximo:</b> $\max_i \|\vec{R}_{\text{nodal, } i}\| < 10^{-14}\,\text{kN}$
+          </div>
+          <p style="font-size: 13px; color: var(--success); font-weight: 600; margin-top: 6px;">
+            &check; Os resíduos obtidos atendem com folga de 8 ordens de magnitude o critério do projeto ($10^{-6}$).
+          </p>
+        </div>
+
+        <div>
+          <div class="card-title">4.2 Interpretação Física dos Esforços</div>
+          <p style="font-size: 13.5px; line-height: 1.5; margin-bottom: 8px;">
+            Sob carregamento de gravidade em pontes e telhados:
+          </p>
+          <ul style="font-size: 13px; padding-left: 18px; line-height: 1.5; margin-bottom: 10px;">
+            <li><b>Banzo Superior:</b> Comprimido (<span class="badge-compression">&minus;</span>). Empurra os nós; risco de flambagem.</li>
+            <li><b>Banzo Inferior:</b> Tracionado (<span class="badge-tension">+</span>). Alonga e puxa os nós de extremidade.</li>
+            <li><b>Diagonais:</b> Alternam tirantes (<span class="badge-tension">+</span>) e escoras (<span class="badge-compression">&minus;</span>) para drenar a cortante aos apoios.</li>
+          </ul>
+
+          <div class="card-title">4.3 Paleta Visual Homologada MdSolids</div>
+          <p style="font-size: 13px; line-height: 1.5;">
+            O software oferece a paleta original extraída por engenharia reversa do executável `MDSolids.exe`:
+            <br>&bull; <b style="color: #00b8d4;">Ciano:</b> Tração ($N > 0$)
+            <br>&bull; <b style="color: #b8860b;">Ouro:</b> Compressão ($N < 0$)
+            <br>&bull; <b style="color: #d81b9b;">Magenta:</b> Força Zero ($N = 0$)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16: CRITÉRIO 4 - GABARITO DOS 12 CASOS -->
+  <div class="slide" data-title="Critério 4: Gabarito dos 12 Casos">
+    <div class="slide-header">
+      <h1>4. Gabarito Oficial da Bateria Canônica (12 Casos)</h1>
+      <span class="tag">Critério 4</span>
+    </div>
+    <div class="slide-content">
+      <table style="font-size: 12px; margin-top: 4px;">
+        <thead>
+          <tr>
+            <th>Caso</th>
+            <th>Nome do Caso Canônico</th>
+            <th>Nós / Barras</th>
+            <th>Estaticidade</th>
+            <th>Propósito Estrutural Auditado</th>
+            <th>Resíduo $\sum F$</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>01</b></td>
+            <td>Triângulo Canônico</td>
+            <td>3 / 3</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Solução analítica exata ($+3.33\,\text{kN}, -6.01\,\text{kN}$)</td>
+            <td class="num">&lt; 10<sup>-15</sup></td>
+          </tr>
+          <tr>
+            <td><b>02</b></td>
+            <td>Telhado Pratt</td>
+            <td>8 / 13</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Carga de telhado convertida em nós superiores</td>
+            <td class="num">&lt; 10<sup>-14</sup></td>
+          </tr>
+          <tr>
+            <td><b>03</b></td>
+            <td>Warren (3 painéis)</td>
+            <td>7 / 11</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Simetria geométrica e alternância de diagonais</td>
+            <td class="num">&lt; 10<sup>-14</sup></td>
+          </tr>
+          <tr>
+            <td><b>04</b></td>
+            <td>Pratt com Vento</td>
+            <td>8 / 13</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Carga horizontal lateral exercitando pino fixo</td>
+            <td class="num">&lt; 10<sup>-14</sup></td>
+          </tr>
+          <tr>
+            <td><b>05</b></td>
+            <td>Força Zero em T</td>
+            <td>4 / 5</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Regra R2: nós descarregados com $N_1 = N_2 = 0$</td>
+            <td class="num">&lt; 10<sup>-15</sup></td>
+          </tr>
+          <tr>
+            <td><b>06</b></td>
+            <td>Força Zero R3</td>
+            <td>4 / 5</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Regra R3: 3 barras, montante vertical com $N=0$</td>
+            <td class="num">&lt; 10<sup>-15</sup></td>
+          </tr>
+          <tr>
+            <td><b>07</b></td>
+            <td>Geometria Irregular</td>
+            <td>4 / 5</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Ângulos oblíquos não triviais e cargas inclinadas</td>
+            <td class="num">&lt; 10<sup>-15</sup></td>
+          </tr>
+          <tr>
+            <td><b>08</b></td>
+            <td>Hiperestática ($g=1$)</td>
+            <td>4 / 6</td>
+            <td>Hiperestática ($g=1$)</td>
+            <td>Dependência comprovada da rigidez axial $EA$</td>
+            <td class="num">&lt; 10<sup>-15</sup></td>
+          </tr>
+          <tr>
+            <td><b>09</b></td>
+            <td>Hipostática</td>
+            <td>3 / 3</td>
+            <td>Hipostática ($g=-1$)</td>
+            <td>Recusa amigável controlada por falta de vínculo</td>
+            <td class="num">Detectado</td>
+          </tr>
+          <tr>
+            <td><b>10</b></td>
+            <td>Mecanismo Interno</td>
+            <td>3 / 2</td>
+            <td>Mecanismo ($g=0$)</td>
+            <td>Detecção espectral de autovalor nulo sem crash</td>
+            <td class="num">Detectado</td>
+          </tr>
+          <tr>
+            <td><b>11</b></td>
+            <td>Sem Carga</td>
+            <td>3 / 3</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Resposta nula trivial coerente ($N=0, R=0$)</td>
+            <td class="num">0.00</td>
+          </tr>
+          <tr>
+            <td><b>12</b></td>
+            <td>Pratt Grande Porte</td>
+            <td>14 / 25</td>
+            <td>Isostática ($g=0$)</td>
+            <td>Escalabilidade: ponte de grande porte (25 barras)</td>
+            <td class="num">&lt; 10<sup>-13</sup></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 17: PLANO DE CONTINGÊNCIA OFFLINE -->
+  <div class="slide" data-title="Plano de Contingência">
+    <div class="slide-header">
+      <h1>Garantia Operacional — Plano de Contingência Offline</h1>
+      <span class="tag">Contingência</span>
+    </div>
+    <div class="slide-content">
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid #2563eb;">
+          <div class="card-title">1. Servidor Local Autônomo</div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            A aplicação inteira roda localmente no laboratório através de:
+          </p>
+          <pre style="margin: 8px 0; font-size: 13px; padding: 6px 10px;"><code>python serve.py</code></pre>
+          <p style="font-size: 12.5px; line-height: 1.5;">
+            Abre automaticamente em `http://127.0.0.1:8000` sem requisições externas ou necessidade de internet.
+          </p>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #059669;">
+          <div class="card-title">2. Relatórios Pré-compilados</div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Dossiê completo em `docs/relatorios/`:
+          </p>
+          <ul style="font-size: 12.5px; padding-left: 16px; line-height: 1.5; margin-top: 6px;">
+            <li>12 páginas HTML autocontidas (`01-triangulo.html`, etc.).</li>
+            <li>Diagramas SVG de alta resolução embutidos.</li>
+            <li>Estilização para impressão direta em A4 / PDF.</li>
+            <li>Prontos para entrega física à banca.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #7c3aed;">
+          <div class="card-title">3. Apresentação Autocontida</div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Slides interativos sem dependências:
+          </p>
+          <ul style="font-size: 12.5px; padding-left: 16px; line-height: 1.5; margin-top: 6px;">
+            <li>Deck em arquivo único HTML (`slides.html`).</li>
+            <li>Navegação por teclado e botões nativos.</li>
+            <li>Visualizável em qualquer computador ou projetor.</li>
+            <li>Exportável para PDF via `Ctrl+P`.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 18px;">
+        <b>Conclusão:</b> Mesmo em caso de falha de energia, bloqueio de portas ou ausência de rede na sala de aula, a defesa teórica e a auditoria dos dados de cálculo continuam garantidas com 100% de integridade física.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 18: CONCLUSÃO E ARGUIÇÃO -->
+  <div class="slide slide-lead" data-title="Conclusão">
+    <div style="margin-bottom: 12px;">
+      <span class="meta-tag" style="background: var(--success-bg); color: var(--success);">Pronto para Arguição</span>
+      <span class="meta-tag">4.0 Pontos Teoria</span>
+      <span class="meta-tag">2.0 Pontos Bateria</span>
+    </div>
+    <h1 style="font-size: 34px;">Conclusão e Arguição Técnica com a Banca</h1>
+    <h2 style="font-size: 19px; max-width: 800px; margin-bottom: 24px;">
+      O módulo desenvolvido atende com rigor pleno os 4 pilares avaliativos, superando o MdSolids original em capacidade hiperestática, conferência cruzada independente e prevenção ativa de instabilidade.
+    </h2>
+
+    <div style="display: flex; gap: 16px;">
+      <a href="../relatorios/index.html" target="_blank" class="btn-nav" style="text-decoration: none; padding: 10px 20px; font-size: 14px; background: var(--primary);">
+        Abrir Dossiê de Relatórios Técnicos &rarr;
+      </a>
+      <button onclick="window.print()" class="btn-nav" style="padding: 10px 20px; font-size: 14px; background: #334155;">
+        Imprimir Slides em PDF
+      </button>
+    </div>
+
+    <p style="margin-top: 32px; font-size: 14px; color: var(--text-muted);">
+      Estamos à disposição do Prof. Márcio para perguntas teóricas e testes ao vivo.
+    </p>
+  </div>
+
+</div>
+
+<!-- Barra de Navegação Inferior -->
+<div id="footer-bar">
+  <div>
+    <span style="font-weight: 600; color: #f8fafc;">MdSolids Trusses &bull; Defesa N2</span>
+    <span style="margin-left: 12px; color: #64748b;" id="slide-title-display">Capa</span>
+  </div>
+
+  <div class="nav-controls">
+    <button class="btn-nav" id="btn-prev" onclick="prevSlide()">&larr; Anterior</button>
+    <span class="slide-counter" id="counter">01 / 18</span>
+    <button class="btn-nav" id="btn-next" onclick="nextSlide()">Próximo &rarr;</button>
+    <button class="btn-nav" onclick="toggleFullScreen()" title="Alternar Tela Cheia (F)">&#x26F6; Tela Cheia</button>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const progressBar = document.getElementById('progress-bar');
+  const counterDisplay = document.getElementById('counter');
+  const titleDisplay = document.getElementById('slide-title-display');
+
+  function updateSlide(index) {
+    if (index < 0) index = 0;
+    if (index >= totalSlides) index = totalSlides - 1;
+
+    slides.forEach((slide, idx) => {
+      slide.classList.toggle('active', idx === index);
+    });
+
+    currentSlide = index;
+    const progress = ((index + 1) / totalSlides) * 100;
+    progressBar.style.width = progress + '%';
+
+    const curNum = String(index + 1).padStart(2, '0');
+    const totNum = String(totalSlides).padStart(2, '0');
+    counterDisplay.textContent = `${curNum} / ${totNum}`;
+
+    const currentTitle = slides[index].getAttribute('data-title') || '';
+    titleDisplay.textContent = currentTitle ? `— ${currentTitle}` : '';
+
+    // Scroll to top of slide on change
+    slides[index].scrollTop = 0;
+  }
+
+  function nextSlide() {
+    if (currentSlide < totalSlides - 1) {
+      updateSlide(currentSlide + 1);
+    }
+  }
+
+  function prevSlide() {
+    if (currentSlide > 0) {
+      updateSlide(currentSlide - 1);
+    }
+  }
+
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  // Teclado
+  window.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'ArrowRight':
+      case ' ':
+      case 'PageDown':
+      case 'Down':
+        nextSlide();
+        e.preventDefault();
+        break;
+      case 'ArrowLeft':
+      case 'Backspace':
+      case 'PageUp':
+      case 'Up':
+        prevSlide();
+        e.preventDefault();
+        break;
+      case 'Home':
+        updateSlide(0);
+        e.preventDefault();
+        break;
+      case 'End':
+        updateSlide(totalSlides - 1);
+        e.preventDefault();
+        break;
+      case 'f':
+      case 'F':
+        toggleFullScreen();
+        break;
+    }
+  });
+
+  // Inicialização
+  updateSlide(0);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "name": "Estado trivial: treliça válida sem carregamento",
+  "description": "Mesma geometria do caso 1, sem nenhuma carga aplicada. Todas as barras devem ficar com força zero e todas as reações nulas.",
+  "exercises": [
+    "estado trivial",
+    "barras de força zero"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "C",
+        "x": 2.0,
+        "y": 3.0,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "AB",
+        "a": "A",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "AC",
+        "a": "A",
+        "b": "C",
+        "EA": 1.0
+      },
+      {
+        "id": "BC",
+        "a": "B",
+        "b": "C",
+        "EA": 1.0
+      }
+    ],
+    "loads": []
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 3,
+      "b": 3,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "AB": 0.0,
+      "AC": 0.0,
+      "BC": 0.0
+    },
+    "reactions": {
+      "A": {
+        "Rx": 0.0,
+        "Ry": 0.0
+      },
+      "B": {
+        "Rx": 0.0,
+        "Ry": 0.0
+      }
+    },
+    "zeroForce": [
+      "AB",
+      "AC",
+      "BC"
+    ],
+    "tolerance": 1e-06
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "name": "Treliça Pratt com carga lateral (vento)",
+  "description": "Banzo superior reto, montantes verticais e diagonais. Carga vertical nos nós internos mais uma força horizontal no nó superior da extremidade. O roleto em B3 não resiste a esforço horizontal, então toda a componente horizontal vai para o pino em B0.",
+  "exercises": [
+    "carga inclinada/lateral",
+    "reação horizontal",
+    "tração/compressão alternada"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "B0",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B1",
+        "x": 2.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "B2",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "none"
+      },
+      {
+        "id": "B3",
+        "x": 6.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "T0",
+        "x": 0.0,
+        "y": 2.0,
+        "support": "none"
+      },
+      {
+        "id": "T1",
+        "x": 2.0,
+        "y": 2.0,
+        "support": "none"
+      },
+      {
+        "id": "T2",
+        "x": 4.0,
+        "y": 2.0,
+        "support": "none"
+      },
+      {
+        "id": "T3",
+        "x": 6.0,
+        "y": 2.0,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "B0B1",
+        "a": "B0",
+        "b": "B1",
+        "EA": 1.0
+      },
+      {
+        "id": "B1B2",
+        "a": "B1",
+        "b": "B2",
+        "EA": 1.0
+      },
+      {
+        "id": "B2B3",
+        "a": "B2",
+        "b": "B3",
+        "EA": 1.0
+      },
+      {
+        "id": "T0T1",
+        "a": "T0",
+        "b": "T1",
+        "EA": 1.0
+      },
+      {
+        "id": "T1T2",
+        "a": "T1",
+        "b": "T2",
+        "EA": 1.0
+      },
+      {
+        "id": "T2T3",
+        "a": "T2",
+        "b": "T3",
+        "EA": 1.0
+      },
+      {
+        "id": "B0T0",
+        "a": "B0",
+        "b": "T0",
+        "EA": 1.0
+      },
+      {
+        "id": "B1T1",
+        "a": "B1",
+        "b": "T1",
+        "EA": 1.0
+      },
+      {
+        "id": "B2T2",
+        "a": "B2",
+        "b": "T2",
+        "EA": 1.0
+      },
+      {
+        "id": "B3T3",
+        "a": "B3",
+        "b": "T3",
+        "EA": 1.0
+      },
+      {
+        "id": "T0B1",
+        "a": "T0",
+        "b": "B1",
+        "EA": 1.0
+      },
+      {
+        "id": "T1B2",
+        "a": "T1",
+        "b": "B2",
+        "EA": 1.0
+      },
+      {
+        "id": "T2B3",
+        "a": "T2",
+        "b": "B3",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "T1",
+        "Fx": 0.0,
+        "Fy": -10.0
+      },
+      {
+        "node": "T2",
+        "Fx": 0.0,
+        "Fy": -10.0
+      },
+      {
+        "node": "T3",
+        "Fx": 8.0,
+        "Fy": 0.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 8,
+      "b": 13,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "B0B1": 8.000000000000007,
+      "B1B2": 15.333333333333332,
+      "B2B3": 12.666666666666668,
+      "T0T1": -7.333333333333318,
+      "T1T2": -4.666666666666657,
+      "T2T3": 8.0,
+      "B0T0": -7.333333333333321,
+      "B1T1": -7.333333333333329,
+      "B2T2": 2.6666666666666714,
+      "B3T3": 0.0,
+      "T0B1": 10.370899457402684,
+      "T1B2": -3.77123616632825,
+      "T2B3": -17.9133717900592
+    },
+    "reactions": {
+      "B0": {
+        "Rx": -8.000000000000007,
+        "Ry": 7.333333333333321
+      },
+      "B3": {
+        "Rx": 0.0,
+        "Ry": 12.666666666666664
+      }
+    },
+    "zeroForce": [
+      "B3T3"
+    ],
+    "tolerance": 1e-06
+  }
+}

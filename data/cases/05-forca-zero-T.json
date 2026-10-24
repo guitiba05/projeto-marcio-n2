@@ -1,0 +1,112 @@
+{
+  "name": "Treliça com barras de força zero (regra R2)",
+  "description": "Painel quadrado com uma diagonal e um nó superior sem carga e sem vínculo (nó D). Pela regra R2, as duas barras que chegam em D (CD e DA) têm força zero. Serve para mostrar que a regra é geométrica e não depende da carga.",
+  "exercises": [
+    "barras de força zero",
+    "regra R2"
+  ],
+  "input": {
+    "units": {
+      "force": "kN",
+      "length": "m"
+    },
+    "nodes": [
+      {
+        "id": "A",
+        "x": 0.0,
+        "y": 0.0,
+        "support": "pin"
+      },
+      {
+        "id": "B",
+        "x": 4.0,
+        "y": 0.0,
+        "support": "roller"
+      },
+      {
+        "id": "C",
+        "x": 4.0,
+        "y": 3.0,
+        "support": "none"
+      },
+      {
+        "id": "D",
+        "x": 0.0,
+        "y": 3.0,
+        "support": "none"
+      }
+    ],
+    "members": [
+      {
+        "id": "AB",
+        "a": "A",
+        "b": "B",
+        "EA": 1.0
+      },
+      {
+        "id": "BC",
+        "a": "B",
+        "b": "C",
+        "EA": 1.0
+      },
+      {
+        "id": "CD",
+        "a": "C",
+        "b": "D",
+        "EA": 1.0
+      },
+      {
+        "id": "DA",
+        "a": "D",
+        "b": "A",
+        "EA": 1.0
+      },
+      {
+        "id": "AC",
+        "a": "A",
+        "b": "C",
+        "EA": 1.0
+      }
+    ],
+    "loads": [
+      {
+        "node": "C",
+        "Fx": 6.0,
+        "Fy": -10.0
+      }
+    ]
+  },
+  "expect": {
+    "status": "ok",
+    "determinacy": {
+      "n": 4,
+      "b": 5,
+      "r": 3,
+      "degree": 0,
+      "label": "isostática"
+    },
+    "members": {
+      "AB": 0.0,
+      "BC": -14.500000000000002,
+      "CD": 0.0,
+      "DA": 0.0,
+      "AC": 7.5000000000000036
+    },
+    "reactions": {
+      "A": {
+        "Rx": -6.000000000000003,
+        "Ry": -4.500000000000002
+      },
+      "B": {
+        "Rx": 0.0,
+        "Ry": 14.500000000000002
+      }
+    },
+    "zeroForce": [
+      "AB",
+      "CD",
+      "DA"
+    ],
+    "tolerance": 1e-06
+  }
+}
