@@ -431,7 +431,7 @@
             <li>Zero dependência gráfica no solver de engenharia.</li>
             <li>Base interna invariante: kN e metros (conversão de unidades na borda).</li>
             <li>Interface com SVG reativo, snap magnético e inspetores ao vivo.</li>
-            <li>Auditoria contínua por 215 testes unitários e de integração.</li>
+            <li>Auditoria contínua por 474 testes automatizados (unitários, integração, adversariais e E2E).</li>
           </ul>
         </div>
 
@@ -490,7 +490,7 @@
           </p>
           <div class="highlight-box">
             <b>Raio de Captura Magnética:</b> Cliques do usuário a menos de $\delta = 14\,\text{px}$ são atraídos automaticamente para o vértice da grade mais próximo.
-            <br><b>Deduplicação Nodal:</b> Se uma coordenada $(x,y)$ já existe no grafo (tolerância $10^{-4}\,\text{m}$), o nó existente é reutilizado.
+            <br><b>Deduplicação Nodal:</b> Se uma coordenada $(x,y)$ já existe no grafo (tolerância $10^{-6}$, na unidade do modelo), o nó existente é reutilizado.
           </div>
         </div>
 
@@ -687,7 +687,7 @@
         </div>
 
         <div>
-          <div class="card-title">2.3 Cobertura Automatizada de Testes (215 Testes)</div>
+          <div class="card-title">2.3 Cobertura Automatizada de Testes (474 Testes)</div>
           <p style="font-size: 14px; margin-bottom: 8px;">
             A suíte `pytest` audita integralmente o comportamento do sistema:
           </p>
@@ -728,7 +728,7 @@
             </tbody>
           </table>
           <p style="font-size: 13px; color: var(--success); font-weight: 600; margin-top: 8px;">
-            &check; 215 passed em 0.84s com 0 falhas e resíduos menores que 10<sup>-14</sup>.
+            &check; 474 passed com 0 falhas e resíduos menores que 10<sup>-14</sup>.
           </p>
         </div>
       </div>
@@ -978,9 +978,9 @@
 
           <div class="card-title">3.8 Decomposição Espectral Prévia</div>
           <p style="font-size: 13.5px; line-height: 1.6;">
-            Antes de inverter $\mathbf{K}_{ff}$, nosso solver calcula seus <b>autovalores e autovetores</b>:
-            $$\mathbf{K}_{ff} \mathbf{\phi}_i = \lambda_i \mathbf{\phi}_i$$
-            Se $\min(\lambda_i) < 10^{-9}$, existe modo cinemático livre. O autovetor $\mathbf{\phi}$ aponta os GDL que se movem livremente.
+            Antes de resolver, nosso solver faz a <b>decomposição em valores singulares</b> de $\mathbf{K}_{ff}$:
+            $$\mathbf{K}_{ff} = \mathbf{U}\,\Sigma\,\mathbf{V}^{T}, \qquad \sigma_1 \ge \dots \ge \sigma_n \ge 0$$
+            O gate é a <b>deficiência de posto</b>: se $\sigma_{\min} \le \sigma_{\max}\cdot n\cdot \varepsilon$, existe direção com rigidez nula (mecanismo) e o vetor singular direito aponta os GDL. Não usamos $\min(\lambda_i)$ nem $\kappa$: ambos medem condicionamento e recusariam treliça estável com rigidez contrastada — nesse caso o resultado sai com <b>aviso</b>, não com recusa.
           </p>
         </div>
 

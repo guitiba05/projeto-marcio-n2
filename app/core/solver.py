@@ -14,7 +14,7 @@ from .determinacy import analyze_determinacy
 from .errors import InputError, TrussError
 from .joints import cross_check
 from .model import Truss, parse_truss
-from .stiffness import StiffnessResult, analyze
+from .stiffness import _ILL_CONDITIONED, StiffnessResult, analyze
 from .stress import analyze_stress, required_areas
 from .topology import analyze_topology
 from .units import area_factor, force_factor, length_factor, stress_factor
@@ -206,6 +206,13 @@ def build_solution(truss: Truss, result: StiffnessResult) -> dict:
             "Treliça hiperestática: os esforços normais dependem da rigidez relativa "
             "das barras (EA). Confira os valores de EA usados."
         )
+    if result.condition > _ILL_CONDITIONED:
+        warnings.append(
+            "A matriz de rigidez é mal condicionada "
+            f"(cond(K_ff) ≈ {result.condition:.1e}). O resultado está correto dentro "
+            "da precisão disponível, mas perde dígitos significativos — evite EA com "
+            "contraste extremo entre as barras."
+        )
 
     displacements = []
     for node in truss.nodes:
@@ -233,6 +240,18 @@ def build_solution(truss: Truss, result: StiffnessResult) -> dict:
             "maxDifference": conv.force_value(cross["maxDifference"]),
             "tolerance": conv.force_value(cross["tolerance"]),
         }
+
+    # A conferência pelo método dos nós é independente do método da rigidez: se
+    # ela diverge numa treliça isostática, o resultado não é confiável mesmo com
+    # o equilíbrio fechando (pode ser condicionamento extremo). Não rebaixamos o
+    # status — o contrato devolve o cálculo —, mas o aviso é explícito.
+    if cross.get("available") and cross.get("passed") is False:
+        warnings.append(
+            "A conferência pelo método dos nós divergiu "
+            f"({cross.get('maxDifference', 0):.3g} contra tolerância "
+            f"{cross.get('tolerance', 0):.3g}): trate os esforços como aproximados. "
+            "Isso costuma indicar rigidez (EA) muito contrastada entre as barras."
+        )
 
     stress = analyze_stress(truss, member_forces)
     stress = _convert_stress(stress, conv)

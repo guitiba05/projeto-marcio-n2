@@ -304,11 +304,83 @@ todos os casos do programa.
 ### 7.6 Detecção de mecanismo (por que não sai número gigante)
 
 Se a treliça for um mecanismo, `K_ff` é **singular** e um `solve` ingênuo devolve
-deslocamentos astronômicos com forças sem sentido. O programa calcula os
-autovalores de `K_ff` (que é simétrica) **antes** de resolver: autovalor nulo
-significa modo de deslocamento livre. Quando isso ocorre, o programa identifica
-quais GDL participam do modo e recusa o cálculo com mensagem — por exemplo
-`[B.uy]` no caso `10-mecanismo`.
+deslocamentos astronômicos com forças sem sentido. O programa faz a
+**decomposição em valores singulares** de `K_ff` **antes** de resolver e verifica
+duas coisas distintas:
+
+1. **Posto (gate de mecanismo).** Se o menor valor singular `s_min` cai abaixo da
+   tolerância de máquina (`s_max · max(shape) · eps`), a matriz é
+   **deficiente em posto**: existe direção de deslocamento com rigidez nula. É
+   mecanismo, e o cálculo é recusado. Os vetores singulares direitos associados
+   aos valores singulares nulos indicam os GDL do modo — por exemplo `[B.uy]` no
+   caso `10-mecanismo`.
+2. **Condicionamento (aviso).** Se o posto é cheio mas `cond(K_ff) = s_max/s_min`
+   é alto (acima de `10^10`), a solução perde dígitos significativos. O resultado
+   é entregue com **aviso explícito**, não recusado.
+
+**Por que o gate é o posto e não o autovalor nem o condicionamento.** Três
+critérios foram testados neste projeto:
+
+| critério | o que mede | veredito |
+|---|---|---|
+| `λ_min < 10^-10 · λ_max` | razão de autovalores | **errado**: recusa treliça estável com rigidez contrastada |
+| `cond(K_ff) > 10^14` | razão de valores singulares | **errado**: mesma falha, só num regime mais extremo |
+| **deficiência de posto** | existe direção de rigidez nula? | **correto**: é exatamente a definição de mecanismo |
+
+Estabilidade cinemática é uma propriedade de *posto*; `cond` mede apenas
+qualidade numérica. Medido nos 12 casos do projeto: todos os estáveis têm `cond`
+entre 4 e 273 e posto cheio; os instáveis têm posto deficiente (`3/4` e `1/2`).
+Uma treliça estável com `EA` de `10^-8` kN num banzo e `10^6` kN nas diagonais
+(contraste `10^14`) tem posto cheio e resolve — com aviso de mal condicionada.
+Acima de `10^16` de contraste o valor singular cai abaixo da precisão de máquina
+e o caso se torna **indistinguível de mecanismo** — limite da aritmética, não do
+método.
+
+#### Calibração medida nos 12 casos
+
+Valores obtidos com `python -c` sobre `data/cases/` (reprodutível; a coluna
+"posto" é `posto(K_ff)/nº de GDL livres`):
+
+| caso | `cond(K_ff)` | posto | veredito |
+|---|---|---|---|
+| `01-triangulo` | 4,1 | 3/3 | resolve |
+| `02-telhado-pratt` | 78,5 | 13/13 | resolve |
+| `03-warren` | 46,3 | 11/11 | resolve |
+| `04-pratt-vento` | 64,6 | 13/13 | resolve |
+| `05-forca-zero-T` | 13,1 | 5/5 | resolve |
+| `06-forca-zero-R3` | 13,8 | 5/5 | resolve |
+| `07-geometria-irregular` | 9,4 | 5/5 | resolve |
+| `08-hiperestatica` | 11,9 | 5/5 | resolve |
+| `09-hipostatica` | 7,9·10¹⁸ | **3/4** | recusa (`hypostatic`) |
+| `10-mecanismo` | ∞ | **1/2** | recusa (`mechanism`) |
+| `11-sem-carga` | 4,1 | 3/3 | resolve |
+| `12-pratt-grande` | 273,4 | 25/25 | resolve |
+
+A separação é limpa: os estáveis têm `cond` ≤ 274 e posto cheio; os instáveis
+têm posto deficiente. Nenhum caso do projeto fica perto da fronteira — a
+fronteira só aparece em rigidez artificialmente contrastada (ver abaixo).
+
+#### Limite físico do contraste de `EA`
+
+| `EA` do banzo (diagonais `10^6` kN) | contraste | `s_min/s_max` | veredito |
+|---|---|---|---|
+| `10^-2` | `10^8` | 4,2·10⁻⁹ | resolve |
+| `10^-4` | `10^10` | 4,2·10⁻¹¹ | resolve |
+| `10^-6` | `10^12` | 4,2·10⁻¹³ | resolve |
+| `10^-8` | `10^14` | 4,2·10⁻¹⁵ | resolve **com aviso** |
+| `10^-10` | `10^16` | 2,0·10⁻¹⁷ | recusa — abaixo da precisão de máquina |
+
+O limite em `10^16` não é escolha arbitrária: `2·10^-17` é menor que
+`n·eps ≈ 6,7·10^-16`, ou seja, o valor singular é **indistinguível de zero** em
+precisão dupla. Nenhum material real tem contraste de rigidez dessa ordem.
+
+**Semântica da conferência cruzada.** O método dos nós é exato por equilíbrio e
+serve de oráculo. Em regimes de condicionamento extremo ele pode divergir da
+rigidez em resíduos da ordem de `10^-6` kN; nesse caso o resultado continua sendo
+entregue (`status = "ok"`), mas acompanhado de **aviso explícito** e da ressalva
+impressa no relatório. Recusar o cálculo seria pior: o valor está correto dentro
+da precisão disponível, e o usuário precisa saber disso — não ser privado do
+resultado.
 
 ---
 

@@ -2,6 +2,7 @@
 
 **Status:** APPROVED & TEST READY (100% PASS, 0 Failures)  
 **Date:** 2026-10-24  
+**Suite:** `python -m pytest -q` (474 collected)
 **Target Repository:** `https://github.com/guitiba05/projeto-marcio-n2`  
 
 ---
@@ -10,26 +11,25 @@
 
 The comprehensive, opaque-box E2E test suite for the **MdSolids Trusses (CEFSA N2)** system has been authored, executed, and verified with a **100% pass rate (0 failures)**.
 
-The suite encompasses **136 dedicated E2E tests** organized across four rigorous testing tiers in `tests/test_e2e.py`, complementing the 215 existing unit/integration tests for a **grand total of 351 automated tests** passing in **1.08 seconds**.
+The suite encompasses **136 dedicated E2E tests** organized across four rigorous testing tiers in `tests/test_e2e.py`, complementing **338** unit, integration, adversarial and security tests for a **grand total of 474 automated tests** passing in under 2 seconds.
 
 ```
 ============================= test session starts =============================
-platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
-rootdir: C:\Users\guilh\Documents\GitHub\projeto-marcio-n2
-collected 351 items
+collected 474 items
 
-tests\test_api.py ..................................                     [  9%]
-tests\test_cases.py .................................................... [ 24%]
-tests\test_e2e.py ...................................................... [ 39%]
-........................................................................ [ 60%]
-..........                                                               [ 63%]
-tests\test_stiffness.py ...................................              [ 73%]
-tests\test_stress.py ...........................                         [ 81%]
-tests\test_units.py ................................                     [ 90%]
-tests\test_validation.py .....................                           [ 96%]
-tests\test_zero_force.py .............                                   [100%]
+tests/test_api.py .........................................                [  9%]
+tests/test_cases.py ...................................................... [ 26%]
+tests/test_e2e.py ....................................................... [ 57%]
+tests/test_adversarial.py ..................................              [ 81%]
+tests/test_adversarial_oracle.py .......................................... [ 90%]
+tests/test_security.py ...................                                [ 94%]
+tests/test_stiffness.py ......................................            [ 96%]
+tests/test_stress.py .....................                                [ 96%]
+tests/test_units.py ..........                                            [ 98%]
+tests/test_validation.py .....................                            [ 99%]
+tests/test_zero_force.py ........                                         [100%]
 
-============================= 351 passed in 1.08s =============================
+============================= 474 passed in ~1.9s =============================
 ```
 
 ---
@@ -43,14 +43,14 @@ tests\test_zero_force.py .............                                   [100%]
 | **Tier 3** | Cross-Feature Combinations | Multi-axial pairwise | **5** | 100% (5/5) | Pairwise wind+gravity, mixed materials, full roundtrip |
 | **Tier 4** | Real-World Scenarios | 8 N2 Benchmarks + Bridge | **10** | 100% (10/10) | N2 Cases 01-08, 14-node Pratt bridge, roof stress reversal |
 | **Total E2E** | `tests/test_e2e.py` | 125 min | **136** | **100% (136/136)** | Full end-to-end integration & acceptance |
-| **Pre-existing**| Unit / Integration | Regression suite | **215** | **100% (215/215)** | Core functions, API endpoints, schema checks |
-| **Grand Total**| **Entire Workspace** | - | **351** | **100% (351/351)** | Total automated quality verification |
+| **Pre-existing**| Unit / Integration / Adversarial / Security | Regression suite | **338** | **100% (338/338)** | Core functions, API endpoints, schema checks, injection and robustness regressions |
+| **Grand Total**| **Entire Workspace** | - | **474** | **100% (474/474)** | Total automated quality verification |
 
 ---
 
 ## 3. Tier 1 Feature Coverage Inventory (86 Tests)
 
-Every feature identified in `PROJECT.md` is covered by $\ge 5$ dedicated end-to-end tests:
+Every feature identified in `docs/plano.md` is covered by $\ge 5$ dedicated end-to-end tests:
 
 | # | Feature Name | Test Identifier Range | Tests | Key Validations |
 |---|---|---|---|---|

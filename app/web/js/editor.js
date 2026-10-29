@@ -20,6 +20,8 @@ const Editor = (() => {
     showGrid: true,
     showLabels: true,
     hoverNode: null,
+    // Cursor de teclado (grade navegável sem mouse). `null` até o primeiro uso.
+    cursor: null,
   };
 
   // Grade com extensão definida: pontos em (i·dx, j·dy) para i em 0..nx, j em 0..ny
@@ -31,6 +33,7 @@ const Editor = (() => {
   let lastNodeClick = null; // { id, time } para detectar duplo clique em nó
   let inspectorKey = null;
   let userAdjusted = false;
+  let keyboardStart = null; // nó de origem ao criar barra pelo teclado
 
   const NODE_R = 5;
   const HIT_R = 14;
@@ -40,6 +43,15 @@ const Editor = (() => {
   const toScreenY = (y) => view.panY - y * view.scale;
   const toWorldX = (sx) => (sx - view.panX) / view.scale;
   const toWorldY = (sy) => (view.panY - sy) / view.scale;
+
+  /** Escape HTML/SVG: ids e unidades vêm do JSON importado e não são confiáveis. */
+  const esc = (value) =>
+    String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
   function gridExtent() {
     return { maxX: grid.dx * grid.nx, maxY: grid.dy * grid.ny };
@@ -222,7 +234,7 @@ const Editor = (() => {
           `y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`
       );
       parts.push(
-        `<line class="member-line hit" data-member="${member.id}" x1="${x1.toFixed(1)}" ` +
+        `<line class="member-line hit" data-member="${esc(member.id)}" x1="${x1.toFixed(1)}" ` +
           `y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`
       );
     }
@@ -277,15 +289,32 @@ const Editor = (() => {
           `cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${NODE_R}"/>`
       );
       parts.push(
-        `<circle class="node-hit" data-node="${node.id}" cx="${sx.toFixed(1)}" ` +
+        `<circle class="node-hit" data-node="${esc(node.id)}" cx="${sx.toFixed(1)}" ` +
           `cy="${sy.toFixed(1)}" r="${HIT_R}"/>`
       );
       if (state.showLabels) {
         parts.push(
           `<text class="node-label" x="${(sx + 9).toFixed(1)}" y="${(sy - 9).toFixed(1)}">` +
-            `${node.id}</text>`
+            `${esc(node.id)}</text>`
         );
       }
+    }
+
+    // cursor de teclado: mostra onde Enter vai criar o nó/barra
+    if (state.cursor && document.activeElement === svg) {
+      const cx = toScreenX(state.cursor.x);
+      const cy = toScreenY(state.cursor.y);
+      parts.push(
+        `<circle class="cursor-mark" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="8"/>`
+      );
+      parts.push(
+        `<line class="cursor-cross" x1="${(cx - 13).toFixed(1)}" y1="${cy.toFixed(1)}" ` +
+          `x2="${(cx + 13).toFixed(1)}" y2="${cy.toFixed(1)}"/>`
+      );
+      parts.push(
+        `<line class="cursor-cross" x1="${cx.toFixed(1)}" y1="${(cy - 13).toFixed(1)}" ` +
+          `x2="${cx.toFixed(1)}" y2="${(cy + 13).toFixed(1)}"/>`
+      );
     }
 
     svg.innerHTML = parts.join('');
@@ -321,14 +350,14 @@ const Editor = (() => {
       const load = Store.loadAt(node.id);
       inspector.innerHTML = `
         <div class="inspector-head">
-          <h3>Nó ${node.id}</h3>
-          <span class="chip neutral">${node.support === 'none' ? 'sem apoio' : node.support}</span>
+          <h3>Nó ${esc(node.id)}</h3>
+          <span class="chip neutral">${node.support === 'none' ? 'sem apoio' : esc(node.support)}</span>
         </div>
         <div class="inspector-grid">
-          <label>x <span class="unit">[${units.length}]</span>
+          <label>x <span class="unit">[${esc(units.length)}]</span>
             <input type="number" step="any" data-field="x" value="${node.x}">
           </label>
-          <label>y <span class="unit">[${units.length}]</span>
+          <label>y <span class="unit">[${esc(units.length)}]</span>
             <input type="number" step="any" data-field="y" value="${node.y}">
           </label>
           <label>apoio
@@ -339,10 +368,10 @@ const Editor = (() => {
               <option value="roller_x"${node.support === 'roller_x' ? ' selected' : ''}>roleto horizontal</option>
             </select>
           </label>
-          <label>Fx <span class="unit">[${units.force}]</span>
+          <label>Fx <span class="unit">[${esc(units.force)}]</span>
             <input type="number" step="any" data-field="Fx" value="${load.Fx}">
           </label>
-          <label>Fy <span class="unit">[${units.force}]</span>
+          <label>Fy <span class="unit">[${esc(units.force)}]</span>
             <input type="number" step="any" data-field="Fy" value="${load.Fy}">
           </label>
         </div>
@@ -360,15 +389,15 @@ const Editor = (() => {
     const areaValue = member.area === null || member.area === undefined ? '' : member.area;
     inspector.innerHTML = `
       <div class="inspector-head">
-        <h3>Barra ${member.id}</h3>
-        <span class="chip neutral">${member.a} — ${member.b}</span>
+        <h3>Barra ${esc(member.id)}</h3>
+        <span class="chip neutral">${esc(member.a)} — ${esc(member.b)}</span>
       </div>
       <div class="inspector-grid">
-        <label>área A <span class="unit">[${units.area}]</span>
+        <label>área A <span class="unit">[${esc(units.area)}]</span>
           <input type="number" step="any" min="0" placeholder="opcional"
                  data-field="area" value="${areaValue}">
         </label>
-        <label>EA <span class="unit">[${units.force}]</span>
+        <label>EA <span class="unit">[${esc(units.force)}]</span>
           <input type="number" step="any" min="0.000001" data-field="EA" value="${member.EA}">
         </label>
       </div>
@@ -424,15 +453,16 @@ const Editor = (() => {
   function setTool(tool) {
     state.tool = tool;
     rubber = null;
+    keyboardStart = null;
     for (const button of document.querySelectorAll('[data-tool]')) {
       button.setAttribute('aria-pressed', String(button.dataset.tool === tool));
     }
     svg.classList.toggle('mode-select', tool === 'select');
     svg.classList.toggle('mode-member', tool === 'member');
     const hints = {
-      select: 'Arraste um nó para mover. Duplo clique alterna o apoio. Role para dar zoom, arraste o fundo para deslocar.',
-      node: 'Clique em um ponto da grade para criar um nó.',
-      member: 'Arraste de um nó (ou de um ponto da grade) até outro para criar a barra.',
+      select: 'Arraste um nó para mover. Duplo clique (ou Enter com o quadro em foco) alterna o apoio. Setas movem o cursor; role para zoom.',
+      node: 'Clique em um ponto da grade para criar um nó — ou foque o quadro e use setas + Enter.',
+      member: 'Arraste de um nó (ou de um ponto da grade) até outro — ou foque o quadro, use setas + Enter na origem e no destino.',
     };
     toolHint.textContent = hints[tool] || '';
   }
@@ -666,6 +696,71 @@ const Editor = (() => {
     renderInspector(true);
   }
 
+  /* --------------------------------------------------- teclado no quadro */
+  function ensureCursor() {
+    if (state.cursor) return state.cursor;
+    const first = Store.getModel().nodes[0];
+    state.cursor = first ? { x: first.x, y: first.y } : { x: 0, y: 0 };
+    return state.cursor;
+  }
+
+  function moveCursor(dx, dy) {
+    const cursor = ensureCursor();
+    cursor.x = Math.round((cursor.x + dx * grid.dx) * 1e6) / 1e6;
+    cursor.y = Math.round((cursor.y + dy * grid.dy) * 1e6) / 1e6;
+    render();
+  }
+
+  function nodeAtCursor(create) {
+    const cursor = ensureCursor();
+    const existing = Store.nodeAt(cursor.x, cursor.y);
+    if (existing) return existing;
+    return create ? Store.addNode(cursor.x, cursor.y) : null;
+  }
+
+  /** Setas movem o cursor de grade; Enter cria nó/barra ou alterna o apoio. */
+  function onCanvasKeyDown(event) {
+    const moves = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, 1],
+      ArrowDown: [0, -1],
+    };
+    const move = moves[event.key];
+    if (move) {
+      event.preventDefault();
+      moveCursor(move[0], move[1]);
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (state.tool === 'node') {
+        nodeAtCursor(true);
+      } else if (state.tool === 'member') {
+        const node = nodeAtCursor(true);
+        if (!keyboardStart) {
+          keyboardStart = node.id;
+          toolHint.textContent = `Origem ${node.id}. Setas movem o cursor; Enter no nó de destino cria a barra.`;
+        } else if (keyboardStart !== node.id) {
+          Store.addMember(keyboardStart, node.id);
+          keyboardStart = null;
+          toolHint.textContent = 'Barra criada. Setas movem o cursor; Enter define a próxima origem.';
+        }
+      } else {
+        const node = nodeAtCursor(false);
+        if (node) Store.cycleSupport(node.id);
+      }
+      return;
+    }
+
+    if (event.key === 'Escape' && keyboardStart) {
+      event.preventDefault();
+      keyboardStart = null;
+      render();
+    }
+  }
+
   function onKeyDown(event) {
     const tag = (event.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
@@ -699,6 +794,9 @@ const Editor = (() => {
     svg.addEventListener('dblclick', onDoubleClick);
     svg.addEventListener('wheel', onWheel, { passive: false });
     svg.addEventListener('contextmenu', (event) => event.preventDefault());
+    svg.addEventListener('keydown', onCanvasKeyDown);
+    svg.addEventListener('focus', () => render());
+    svg.addEventListener('blur', () => render());
 
     inspector.addEventListener('input', onInspectorInput);
     inspector.addEventListener('change', onInspectorInput);

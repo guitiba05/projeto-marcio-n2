@@ -16,6 +16,7 @@ O cálculo é **sempre** delegado a `app.core`; nada de engenharia aqui.
 from __future__ import annotations
 
 import json
+from html import escape
 from pathlib import Path
 
 from fastapi import Body, FastAPI, HTTPException
@@ -24,8 +25,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.report import render_report
 from app.core.errors import TrussError
+from app.core.model import parse_truss
 from app.core.solver import solve_payload, stress_payload
-from app.render.svg import render_truss_svg
+from app.render.svg import render_error_svg, render_truss_svg
 
 VERSION = "1.0.0"
 
@@ -110,21 +112,61 @@ def solve(payload: dict = Body(...)) -> dict:
             status_code=200,
         )
 
+def _dimension(value, default: int) -> int:
+    """Dimensão do SVG: inteiro entre 16 e 4000, com fallback seguro.
+
+    `OverflowError` cobre JSON com `1e999` (lido como `inf`), que não pode
+    derrubar a rota com HTTP 500.
+    """
+    try:
+        number = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return max(16, min(number, 4000))
+
+
+def _flag(value, default: bool = False) -> bool:
+    """Booleano tolerante: `bool("false")` seria `True`, o que inverteria flags."""
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    text = str(value).strip().lower()
+    if text in {"1", "true", "yes", "on"}:
+        return True
+    if text in {"0", "false", "no", "off", ""}:
+        return False
+    return default
+
 
 @app.post("/api/figure")
 def figure(payload: dict = Body(...)) -> Response:
     """Diagrama da treliça em SVG (com esforços, se o modelo for resolvível)."""
     model = payload.get("model") or {}
+    width = _dimension(payload.get("width"), 880)
+    height = _dimension(payload.get("height"), 520)
+    palette = payload.get("palette") or "padrao"
+    show_stress = _flag(payload.get("showStress"), False)
+
+    try:
+        parse_truss(model)
+    except TrussError as exc:
+        # Modelo inválido não pode derrubar a rota: devolve um SVG explicativo.
+        svg = render_error_svg(exc.message, width=width, height=height)
+        return Response(content=svg, media_type="image/svg+xml")
+
     solution = solve_payload(model)
     svg = render_truss_svg(
         model,
         solution if solution.get("status") == "ok" else None,
-        width=int(payload.get("width") or 880),
-        height=int(payload.get("height") or 520),
-        show_values=bool(payload.get("showValues", True)),
-        show_displacements=bool(payload.get("showDisplacements", False)),
-        palette=payload.get("palette") or "padrao",
-        show_stress=bool(payload.get("showStress", False)),
+        width=width,
+        height=height,
+        show_values=_flag(payload.get("showValues"), True),
+        show_displacements=_flag(payload.get("showDisplacements"), False),
+        palette=palette,
+        show_stress=show_stress,
     )
     return Response(content=svg, media_type="image/svg+xml")
 
@@ -153,6 +195,7 @@ def stress(payload: dict = Body(...)) -> dict:
             status_code=200,
         )
 
+
 @app.post("/api/report", response_class=HTMLResponse)
 def report(payload: dict = Body(...)) -> HTMLResponse:
     """Relatório imprimível do caso (HTML)."""
@@ -161,7 +204,7 @@ def report(payload: dict = Body(...)) -> HTMLResponse:
 
     if solution.get("status") != "ok":
         errors = solution.get("errors") or [{"message": "modelo inválido"}]
-        messages = "".join(f"<li>{item['message']}</li>" for item in errors)
+        messages = "".join(f"<li>{escape(str(item['message']))}</li>" for item in errors)
         return HTMLResponse(
             "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='utf-8'>"
             "<title>Relatório — modelo inválido</title></head><body "
@@ -177,7 +220,7 @@ def report(payload: dict = Body(...)) -> HTMLResponse:
         solution,
         title=payload.get("title"),
         palette=payload.get("palette") or "padrao",
-        show_stress=bool(payload.get("showStress", False)),
+        show_stress=_flag(payload.get("showStress"), False),
     )
     return HTMLResponse(html)
 

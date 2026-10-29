@@ -247,7 +247,7 @@ deliberadas, todas documentadas na seção 6.
 - **Cobertura de erro**: área nula/negativa, σ_adm nula/negativa, modo
   inválido (HTTP 400), modelo inválido, barra sem área (parcial), nenhuma barra
   com área.
-- **Suíte**: `215 passed`. `docs/validacao.md` regenerado por script: **12/12**.
+- **Suíte**: `474 passed` (unitários, integração, adversariais, segurança e E2E). `docs/validacao.md` regenerado por script: **12/12**.
 
 ### F4 — Didática e apresentação
 

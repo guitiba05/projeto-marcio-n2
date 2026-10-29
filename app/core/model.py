@@ -59,6 +59,11 @@ SUPPORT_ALIASES: dict[str, str] = {
 
 COMPONENTS = ("ux", "uy")
 
+# Teto de tamanho: a solução é O(n³) e o servidor é um processo único. Um payload
+# gigante travaria a máquina — o limite é generoso para treliças didáticas.
+MAX_NODES = 400
+MAX_MEMBERS = 1200
+
 
 def normalize_support(value: object) -> str:
     key = str(value or "none").strip().lower()
@@ -278,6 +283,12 @@ def parse_truss(data: dict) -> Truss:
     raw_nodes = data.get("nodes")
     if not isinstance(raw_nodes, list) or not raw_nodes:
         raise InputError("a treliça precisa de pelo menos um nó.", code="no_nodes")
+    if len(raw_nodes) > MAX_NODES:
+        raise InputError(
+            f"a treliça tem {len(raw_nodes)} nós; o limite é {MAX_NODES}. "
+            "Divida o modelo ou reduza a discretização.",
+            code="too_large",
+        )
 
     nodes: list[Node] = []
     seen_ids: set[str] = set()
@@ -312,6 +323,12 @@ def parse_truss(data: dict) -> Truss:
     raw_members = data.get("members")
     if not isinstance(raw_members, list) or not raw_members:
         raise InputError("a treliça precisa de pelo menos uma barra.", code="no_members")
+    if len(raw_members) > MAX_MEMBERS:
+        raise InputError(
+            f"a treliça tem {len(raw_members)} barras; o limite é {MAX_MEMBERS}. "
+            "Divida o modelo ou reduza a discretização.",
+            code="too_large",
+        )
 
     node_ids = {node.id for node in nodes}
     nodes_by_id = {node.id: node for node in nodes}

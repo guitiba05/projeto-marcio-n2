@@ -14,12 +14,13 @@ Convenções visuais:
 from __future__ import annotations
 
 import math
+import re
 from html import escape
 
 # Paleta padrão: acessível e legível em projeção e impressão.
 TENSION_COLOR = "#2563eb"
 COMPRESSION_COLOR = "#dc2626"
-ZERO_COLOR = "#94a3b8"
+ZERO_COLOR = "#64748b"
 
 # Paleta do MdSolids original (documentada no help oficial e extraída do binário
 # 4.0): tração em ciano, compressão em ouro, força zero em magenta.
@@ -28,12 +29,18 @@ PALETTES: dict[str, dict[str, str]] = {
     "padrao": {
         "tension": "#2563eb",
         "compression": "#dc2626",
-        "zero": "#94a3b8",
+        "zero": "#64748b",
     },
     "mdsolids": {
         "tension": "#00b8d4",
         "compression": "#b8860b",
         "zero": "#d81b9b",
+        # As barras mantêm as cores exatas do MdSolids original. Para o TEXTO,
+        # que exige contraste >= 4,5:1 sobre branco (WCAG AA), usamos variantes
+        # escuras da mesma família — a fidelidade visual fica nas barras.
+        "tensionText": "#0e7490",
+        "compressionText": "#7a5c06",
+        "zeroText": "#a21caf",
     },
 }
 DEFAULT_PALETTE = "padrao"
@@ -154,14 +161,52 @@ def _member_style(
     return color, dash, width
 
 
+_PALETTE_KEYS = {
+    "tension", "compression", "zero",
+    "tensionText", "compressionText", "zeroText",
+}
+_COLOR_RE = re.compile(r"#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})")
+
+
 def resolve_palette(palette) -> dict[str, str]:
-    """Aceita o nome da paleta ('padrao' | 'mdsolids') ou um dicionário de cores."""
+    """Aceita o nome da paleta ('padrao' | 'mdsolids') ou um dicionário de cores.
+
+    Cores entram em atributos SVG, então só valores `#rgb(a)`/`#rrggbb(aa)` são
+    aceitos: qualquer outro conteúdo é descartado em vez de virar marcação.
+    """
     if isinstance(palette, dict):
         merged = dict(PALETTES[DEFAULT_PALETTE])
-        merged.update({key: str(value) for key, value in palette.items()})
+        for key, value in palette.items():
+            if key in _PALETTE_KEYS and _COLOR_RE.fullmatch(str(value)):
+                merged[key] = str(value)
         return merged
     key = str(palette or DEFAULT_PALETTE).strip().lower()
     return dict(PALETTES.get(key, PALETTES[DEFAULT_PALETTE]))
+
+
+def _member_text_color(state: str, palette: dict[str, str]) -> str:
+    """Cor do rótulo numérico: variante escura quando a paleta a define."""
+    if state == "tração":
+        return palette.get("tensionText") or palette["tension"]
+    if state == "compressão":
+        return palette.get("compressionText") or palette["compression"]
+    return palette.get("zeroText") or palette["zero"]
+
+
+def render_error_svg(message: str, *, width: int = 880, height: int = 520) -> str:
+    """SVG explicativo para modelo inválido (a rota não deve devolver 500)."""
+    lines = [line.strip() for line in str(message).splitlines() if line.strip()]
+    parts = [f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>']
+    top = max(30.0, height / 2 - 12 * min(len(lines), 8))
+    for index, line in enumerate(lines[:8]):
+        parts.append(
+            f'<text x="20" y="{top + index * 20:.1f}" font-family="{_FONT}" '
+            f'font-size="12" fill="{MUTED_COLOR}">{escape(line)}</text>'
+        )
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+        f'width="100%" role="img" aria-label="modelo inválido">{"".join(parts)}</svg>'
+    )
 
 
 def render_truss_svg(
@@ -250,10 +295,11 @@ def render_truss_svg(
                 label = f"σ {_fmt(stress_by_member[member_id], 1)}"
             else:
                 label = f"{_fmt(force)}"
+            text_color = _member_text_color(state, colors)
             parts.append(
                 f'<text x="{lx:.2f}" y="{ly:.2f}" text-anchor="middle" '
                 f'dominant-baseline="middle" font-family="{_FONT}" font-size="10.5" '
-                f'font-weight="600" fill="{color}">{escape(label)}</text>'
+                f'font-weight="600" fill="{text_color}">{escape(label)}</text>'
             )
 
     # -- cargas aplicadas ----------------------------------------------------

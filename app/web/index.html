@@ -120,13 +120,14 @@
       </div>
     </div>
 
-    <p class="hint" id="tool-hint">Arraste de um ponto a outro na grade para criar uma barra.</p>
+    <p class="hint" id="tool-hint" role="status" aria-live="polite">Arraste de um ponto a outro na grade para criar uma barra.</p>
 
     <div class="canvas-wrap">
-      <svg id="canvas" role="application" aria-label="Quadro de edição da treliça"></svg>
+      <svg id="canvas" role="application" tabindex="0"
+           aria-label="Quadro de edição da treliça. Use as setas para mover o cursor de grade; Enter cria nó, define origem/destino da barra ou alterna o apoio."></svg>
       <div class="canvas-empty" id="canvas-empty">
         <p class="empty-title">Quadro vazio</p>
-        <p class="empty-sub">Escolha <b>Nó</b> e clique na grade, ou carregue um caso pronto.</p>
+        <p class="empty-sub">Escolha <b>Nó</b> e clique na grade (ou use setas + Enter), ou carregue um caso pronto.</p>
       </div>
     </div>
 

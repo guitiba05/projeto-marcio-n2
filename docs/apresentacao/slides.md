@@ -123,7 +123,7 @@ style: |
   - O usuário parametriza o espaço de trabalho via vãos horizontais/verticais e espaçamento ($\Delta x, \Delta y$).
   - O canvas SVG implementa **snap magnético automático** para os vértices da grade com raio de atração ajustável.
 - **Deduplicação de Coordenadas e Criação de Nós:**
-  - Tolerância espacial $\varepsilon = 10^{-4}\,\text{m}$: cliques sucessivos no mesmo ponto compartilham a mesma entidade nodal, evitando nós fantasmas.
+  - Tolerância espacial $\varepsilon = 10^{-6}$ (na unidade do modelo): cliques sucessivos no mesmo ponto compartilham a mesma entidade nodal, evitando nós fantasmas.
   - O grafo estrutural constrói nós unívocos $i = \{ \text{id}, x, y, \text{apoio} \}$.
 
 ```
@@ -188,7 +188,7 @@ Nó A: (0.00, 0.00) [Pino]   |   Nó B: (4.00, 0.00) [Rolete]   |   Nó C: (2.00
   - As respostas da API são devolvidas na unidade solicitada pelo cliente.
 - **Prevenção Ativa de Erros:**
   - O pipeline de validação rejeita antes do cálculo: nós desconexos, geometrias colapsadas, caracteres não numéricos e sistemas sem vínculos.
-  - Zero tolerância a erros: 215 testes automatizados cobrindo condições de contorno normais e extremas.
+  - Zero tolerância a erros: 474 testes automatizados cobrindo condições de contorno normais e extremas.
 
 ---
 
@@ -289,10 +289,10 @@ $$k_e = \frac{EA}{L} \begin{bmatrix}
 </div>
 
 - **Tratamento Matemático Implementado:**
-  - Em vez de tentar uma eliminação direta que causaria `ZeroDivisionError` ou geraria deslocamentos espúrios de $10^{16}\,\text{m}$, o nosso solver realiza a **decomposição espectral simétrica de $K_{ff}$**:
-    $$K_{ff} \phi_i = \lambda_i \phi_i$$
-  - Critério de Instabilidade: se $\min(\lambda_i) < 10^{-9}$, existe modo cinemático livre.
-  - O autovetor $\phi_{\text{nulo}}$ revela exatamente quais nós e direções participam do movimento cinemático (ex: caso `10-mecanismo` detecta modo livre no GDL $B.u_y$).
+  - Em vez de tentar uma eliminação direta que causaria `ZeroDivisionError` ou geraria deslocamentos espúrios de $10^{16}\,\text{m}$, o nosso solver faz a **decomposição em valores singulares de $K_{ff}$** antes de resolver:
+    $$K_{ff} = U\,\Sigma\,V^{T}, \qquad \sigma_1 \ge \dots \ge \sigma_n \ge 0$$
+  - Critério de instabilidade: **deficiência de posto** de $K_{ff}$ — se o menor valor singular cai abaixo da tolerância de máquina ($s_{\min} \le s_{\max}\cdot n\cdot \epsilon$), existe direção com rigidez nula. Os vetores singulares direitos indicam os GDL. Não usamos $\min(\lambda_i)$ nem $\kappa$: ambos medem condicionamento e recusariam treliça estável com rigidez contrastada. Condicionamento alto sem deficiência de posto gera **aviso**, não recusa.
+  - O vetor singular $v_{\text{nulo}}$ revela exatamente quais nós e direções participam do movimento cinemático (ex: caso `10-mecanismo` detecta modo livre no GDL $B.u_y$).
   - O sistema aborta com mensagem amigável e explicativa, sem crash.
 
 ---
@@ -458,7 +458,7 @@ O software executa quatro verificações estáticas para cada caso resolvido:
 - **Solver Matemático Rigoroso** baseado no Método da Rigidez Direta com detecção espectral de mecanismos.
 - **Validação Cruzada Independente** (Método dos Nós e Ritter) com resíduos $< 10^{-14}$.
 - **Cálculo de Tensões Normais e Dimensionamento Inverso** ($\sigma = N/A$, $A_{\text{req}} = |N|/\sigma_{\text{adm}}$).
-- **215 Testes Automatizados** cobrindo todos os casos canônicos com 100% de aprovação.
+- **474 Testes Automatizados** cobrindo todos os casos canônicos com 100% de aprovação.
 
 <br>
 

@@ -103,7 +103,7 @@ Para apresentação em dupla (conforme permitido pelo enunciado):
   > Uma fonte crônica de erros em softwares estruturais é a conversão confusa de unidades. Para resolver isso em definitivo, adotamos o princípio da unidade invariante na borda:
   > O usuário pode fornecer entradas em kN, N, kgf, tf ou unidades imperiais como kip e libras-força, bem como comprimentos em metros, milímetros ou polegadas.
   > Assim que a requisição atinge a borda da aplicação, todos os valores são convertidos para a base do SI: kN para forças, metros para coordenadas, mm² para seções transversais e MPa para tensões normais. Todo o solver matricial opera nessa base limpa, e o resultado é reconvertido para a visualização desejada."
-- **Ação na Tela:** Mostrar o arquivo `pyproject.toml` ou os 215 testes passando no terminal.
+- **Ação na Tela:** Mostrar o arquivo `pyproject.toml` ou os 474 testes passando no terminal.
 
 ---
 
@@ -332,10 +332,10 @@ Aqui estão as 12 perguntas mais prováveis que o Prof. Márcio pode fazer duran
 **"Como o algoritmo de vocês detecta que uma treliça é um mecanismo sem gerar erro fatal (`ZeroDivisionError`) ou números astronômicos na tela?"**
 
 **Resposta do Grupo:**
-> "Nós implementamos uma etapa preventiva de **decomposição espectral dos autovalores da submatriz $\mathbf{K}_{ff}$** antes da etapa de inversão ou fatoração de Cholesky.
-> Como $\mathbf{K}_{ff}$ é simétrica e definida positiva para treliças estáveis, todos os seus autovalores reais $\lambda_i$ devem ser estritamente maiores que zero.
-> Se o menor autovalor satisfizer $\lambda_{\text{mín}} < 10^{-9}$, o solver detecta a existência de um modo de corpo rígido sem rigidez elástica.
-> O algoritmo examina as componentes do autovetor correspondente $\mathbf{\phi}$ para identificar quais graus de liberdade nodais compõem o mecanismo cinemático, interrompe o cálculo com segurança e retorna uma mensagem diagnóstica clara para o usuário (por exemplo, `mecanismo no GDL [B.uy]`), sem travar o software."
+> "Nós implementamos uma etapa preventiva de **decomposição em valores singulares da submatriz $\mathbf{K}_{ff}$** antes de resolver o sistema.
+> O critério de instabilidade é a **deficiência de posto**: se o menor valor singular satisfaz $\sigma_{\min} \le \sigma_{\max}\cdot n\cdot \varepsilon$, existe direção de deslocamento com rigidez nula — ou seja, mecanismo.
+> Não usamos $\lambda_{\min}$ nem o número de condição $\kappa$: ambos medem *condicionamento*, não estabilidade cinemática, e recusariam uma treliça estável com rigidez muito contrastada entre as barras (posto cheio, $\kappa$ alto). Nesse caso o resultado é entregue com **aviso de mal condicionada**, não recusado.
+> O algoritmo examina as componentes do vetor singular direito associado ao valor singular nulo para identificar quais graus de liberdade compõem o mecanismo, interrompe o cálculo com segurança e retorna mensagem diagnóstica clara (por exemplo, `mecanismo no GDL [B.uy]`), sem travar o software."
 
 ---
 

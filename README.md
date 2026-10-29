@@ -44,6 +44,8 @@ A documentação automática da API fica em `/docs`.
 | Relatório imprimível (salvar em PDF) | botão "Relatório" |
 | Importar / exportar JSON | barra superior |
 | 12 casos prontos (incluindo 2 casos de erro) | seletor "Caso pronto" |
+| Operação por teclado no quadro (setas + Enter) e foco visível | editor |
+| Paleta padrão com contraste WCAG AA no texto | diagrama + relatório |
 
 Convenção fixada em todo o projeto: **N > 0 é tração, N < 0 é compressão**.
 
@@ -65,12 +67,14 @@ app/
     server.py        rotas FastAPI (solve, stress, figure, report, presets)
     report.py        relatório HTML imprimível
   render/
-    svg.py           diagrama da treliça em SVG
+    svg.py           diagrama da treliça em SVG (+ SVG de erro e paletas)
   web/               interface (HTML + CSS + JS, sem framework)
 data/cases/          12 casos com gabarito (fonte única de testes e presets)
-tests/               suíte pytest
-tools/               geradores (bateria de casos e documento de validação)
-docs/                enunciado, escopo, plano, teoria e validação
+tests/               suíte pytest (unitários, integração, adversariais, segurança, E2E)
+tools/               geradores (casos, validação, relatórios)
+docs/                enunciado, escopo, plano, teoria, validação, paridade MdSolids
+docs/apresentacao/   slides interativos e roteiro de defesa
+docs/relatorios/     12 relatórios HTML de contingência (gerados)
 ```
 
 **Regra de ouro:** nenhuma conta de engenharia em JavaScript. O front apenas
@@ -83,16 +87,19 @@ lugar para auditar e testar.
 python -m pytest -q
 ```
 
-A suíte cobre: os 12 casos da bateria (esforços, reações, estaticidade,
-equilíbrio, conferência cruzada e barras de força zero), validação de entrada,
-propriedades da matriz de rigidez, independência de `EA` na isostática e
-dependência na hiperestática, unidades, regras de força zero e a API HTTP.
+A suíte (474 testes) cobre: os 12 casos da bateria (esforços, reações,
+estaticidade, equilíbrio, conferência cruzada e barras de força zero), validação
+de entrada, propriedades da matriz de rigidez, independência de `EA` na
+isostática e dependência na hiperestática, unidades, regras de força zero, a API
+HTTP, casos adversariais (geometria extrema, mecanismos, entradas hostis) e
+regressões de segurança (escape de HTML/SVG, paleta, dimensões inválidas).
 
 Ferramentas auxiliares:
 
 ```powershell
 python tools/build_cases.py        # regera os gabaritos e revalida os 12 casos
 python tools/build_validation.py   # regera docs/validacao.md
+python tools/build_reports.py      # regera docs/relatorios/*.html
 ```
 
 ## Rotas da API
@@ -114,6 +121,10 @@ python tools/build_validation.py   # regera docs/validacao.md
 - [`docs/teoria.md`](docs/teoria.md) — **base teórica para a apresentação (4,0 pts)**
 - [`docs/validacao.md`](docs/validacao.md) — registro de validação dos 12 casos
 - [`docs/mdsolids-truss.md`](docs/mdsolids-truss.md) — **evidência do binário oficial e matriz de paridade item a item**
+- [`docs/apresentacao/slides.html`](docs/apresentacao/slides.html) — slides da defesa
+- [`docs/relatorios/index.html`](docs/relatorios/index.html) — dossiê de contingência
+- [`TEST_INFRA.md`](TEST_INFRA.md) — metodologia da suíte de testes
+- [`docs/verificacao-manual.md`](docs/verificacao-manual.md) — checklist de verificação no navegador (roteiro da defesa)
 
 ## Requisitos do trabalho (resumo)
 

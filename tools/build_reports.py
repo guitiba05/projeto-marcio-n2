@@ -132,8 +132,8 @@ def render_error_report(slug: str, case_data: dict, solution: dict) -> str:
   <p><b>Por que o software rejeita este caso em vez de retornar números absurdos?</b></p>
   <p>
     Softwares numéricos ingênuos tentam inverter matrizes singulares via eliminação gaussiana sem pivotamento ou decomposição espectral, gerando resíduos numéricos astronômicos (ex: deslocamentos de 10<sup>16</sup> m e forças espúrias).
-    Nossa implementação realiza verificação preliminar da fórmula de estaticidade <code>g = b + r - 2n</code> e, no caso de matrizes aparentemente isostáticas (<code>g = 0</code>), efetua a <b>análise espectral dos autovalores da submatriz de rigidez livre K<sub>ff</sub></b>.
-    Ao identificar autovalores nulos (&lambda; &approx; 0), o sistema isola o modo rígido (mecanismo) e notifica o usuário com exatidão física, assegurando confiabilidade total da modelagem.
+    Nossa implementação realiza verificação preliminar da fórmula de estaticidade <code>g = b + r - 2n</code> e, no caso de matrizes aparentemente isostáticas (<code>g = 0</code>), efetua a <b>decomposição em valores singulares da submatriz de rigidez livre K<sub>ff</sub></b>.
+    O critério é a <b>deficiência de posto</b>: quando o menor valor singular cai abaixo da tolerância de máquina, existe direção de deslocamento com rigidez nula — o sistema isola o modo rígido pelos vetores singulares direitos e notifica o usuário, sem gerar números espúrios. Condicionamento alto com posto cheio <i>não</i> é mecanismo: nesse caso o resultado é entregue com aviso de "mal condicionada".
   </p>
 </div>
 

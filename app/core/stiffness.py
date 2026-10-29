@@ -35,7 +35,10 @@ TENSION = "tração"
 COMPRESSION = "compressão"
 ZERO = "força zero"
 
-_EIGEN_TOL = 1e-10   # tolerância relativa para considerar autovalor nulo
+# Limiar de **aviso** (não de recusa) de condicionamento: acima disso a solução
+# perde dígitos significativos e o resultado é entregue com ressalva explícita.
+# O gate de mecanismo é a deficiência de posto — ver `_rank_analysis`.
+_ILL_CONDITIONED = 1e10
 
 
 @dataclass(frozen=True)
@@ -75,6 +78,9 @@ class StiffnessResult:
     u: np.ndarray
     reaction_values: dict[int, float]
     members: tuple[MemberResult, ...]
+    # Número de condição de K_ff: qualidade numérica do resultado (não é o gate
+    # de mecanismo, que é a deficiência de posto).
+    condition: float = 1.0
 
     def displacement(self, node_id: str) -> tuple[float, float]:
         index = self.truss.node_index(node_id)
@@ -131,24 +137,76 @@ def _describe_dof(truss: Truss, dof: int) -> str:
 
 
 def find_mechanism_dofs(
-    K_ff: np.ndarray, free_dofs: tuple[int, ...], tol_rel: float = _EIGEN_TOL
+    K_ff: np.ndarray, free_dofs: tuple[int, ...], tol_rel: float | None = None
 ) -> list[int]:
-    """GDL que participam de um modo de deslocamento livre (autovalor nulo)."""
+    """GDL que participam de um modo de deslocamento livre.
+
+    Usa a **mesma** decomposição em valores singulares do critério de
+    singularidade (`_is_singular`): os vetores singulares direitos associados a
+    valores singulares desprezíveis são as direções sem rigidez. Manter gate e
+    diagnóstico no mesmo critério evita o caso em que a matriz é declarada
+    singular mas nenhum autovetor é isolado.
+    """
     if K_ff.size == 0:
         return []
-    eigenvalues, eigenvectors = np.linalg.eigh(K_ff)
-    scale = float(np.max(np.abs(eigenvalues)))
+    try:
+        _, singular, vh = np.linalg.svd(K_ff)
+    except np.linalg.LinAlgError:
+        return list(free_dofs)
+
+    scale = float(singular[0]) if singular.size else 0.0
     if scale <= 0.0:
         return list(free_dofs)
 
-    threshold = tol_rel * scale
+    tolerance = (
+        scale * max(K_ff.shape) * np.finfo(float).eps if tol_rel is None else tol_rel * scale
+    )
+    threshold = tolerance
     suspects: set[int] = set()
-    for column in np.nonzero(eigenvalues <= threshold)[0]:
-        vector = eigenvectors[:, column]
+    for index in np.nonzero(singular <= threshold)[0]:
+        vector = vh[index]
         peak = float(np.max(np.abs(vector))) or 1.0
         for row in np.nonzero(np.abs(vector) > 1e-6 * peak)[0]:
             suspects.add(free_dofs[int(row)])
     return sorted(suspects)
+
+
+def _rank_analysis(K_ff: np.ndarray) -> tuple[bool, float]:
+    """Analisa posto e condicionamento da submatriz livre.
+
+    Devolve `(singular, cond)`.
+
+    O **gate de mecanismo é a deficiência de posto**, não o número de condição:
+    estabilidade cinemática é uma propriedade de posto (existe direção com
+    rigidez nula?), enquanto `cond` mede apenas qualidade numérica. Uma treliça
+    estável com rigidez muito contrastada tem `cond` alto — até 1e14 — e posto
+    cheio; recusá-la seria falso positivo. Os casos instáveis deste projeto têm
+    valor singular exatamente nulo (`cond = inf`) ou razão `smin/smax ≈ 1e-19`,
+    muito abaixo da tolerância de máquina.
+
+    A tolerância segue `numpy.linalg.matrix_rank`: `smax · max(shape) · eps`.
+    """
+    if K_ff.size == 0:
+        return False, 1.0
+    try:
+        singular_values = np.linalg.svd(K_ff, compute_uv=False)
+    except np.linalg.LinAlgError:
+        return True, float("inf")
+    if singular_values.size == 0:
+        return False, 1.0
+
+    smax = float(singular_values[0])
+    smin = float(singular_values[-1])
+    if smax <= 0.0:
+        return True, float("inf")
+    tolerance = smax * max(K_ff.shape) * np.finfo(float).eps
+    cond = float("inf") if smin <= 0.0 else smax / smin
+    return bool(smin <= tolerance), cond
+
+
+def _is_singular(K_ff: np.ndarray) -> bool:
+    """Atalho booleano de `_rank_analysis` (mantido para leitura e testes)."""
+    return _rank_analysis(K_ff)[0]
 
 
 def analyze(truss: Truss) -> StiffnessResult:
@@ -167,12 +225,23 @@ def analyze(truss: Truss) -> StiffnessResult:
     K_ff = K[np.ix_(list(free_dofs), list(free_dofs))] if free_dofs else np.zeros((0, 0))
     F_f = F[list(free_dofs)] if free_dofs else np.zeros(0)
 
-    mechanism = find_mechanism_dofs(K_ff, free_dofs)
-    if mechanism:
+    singular, condition = _rank_analysis(K_ff)
+    if singular:
+        # O vetor singular nulo indica quais GDL participam do movimento livre.
+        suspects = find_mechanism_dofs(K_ff, free_dofs)
+        if suspects:
+            mechanism = suspects
+            scope = ""
+        else:
+            mechanism = list(free_dofs)
+            scope = (
+                " (não foi possível isolar um único modo: todos os GDL livres "
+                "são candidatos)"
+            )
         names = ", ".join(_describe_dof(truss, dof) for dof in mechanism)
         raise MechanismError(
             "A treliça tem mecanismo interno: a matriz de rigidez é singular, ou seja, "
-            f"existe deslocamento sem resistência nos GDL [{names}]. "
+            f"existe deslocamento sem resistência nos GDL [{names}]{scope}. "
             "A contagem b + r - 2n não garante estabilidade; adicione barras ou vínculos.",
             code="mechanism",
         )
@@ -234,4 +303,5 @@ def analyze(truss: Truss) -> StiffnessResult:
         u=u,
         reaction_values=reaction_values,
         members=tuple(results),
+        condition=condition,
     )

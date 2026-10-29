@@ -58,7 +58,7 @@ The test suite is structured into four distinct, progressive tiers designed to v
 ```
 
 ### 2.1 Tier 1: Feature Coverage (>=5 Tests per Core Feature)
-Tier 1 ensures that every individual capability outlined in `PROJECT.md` operates with precision. Each feature is exercised by a minimum of 5 dedicated test cases:
+Tier 1 ensures that every individual capability outlined in `docs/plano.md` operates with precision. Each feature is exercised by a minimum of 5 dedicated test cases:
 1. **Grid Definition & Snapping**: Parsing parameters, discrete snapping, non-integer steps, boundary clamping, nearest-node priority hit testing.
 2. **Member Geometry & Connectivity**: Length computation ($L = \sqrt{\Delta x^2 + \Delta y^2}$), directional cosines ($c, s$), quadrant orientation, and connectivity.
 3. **Standard Supports**: Pin (2 restraints), Roller Y (1 vertical restraint), Roller X (1 horizontal restraint), Free nodes, and support alias normalization.
