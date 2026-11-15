@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Treliças Planas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Treliças Planas</h1>
+      <p>Versão do módulo <em>Trusses</em> do MDSolids · método dos nós resolvido por eliminação de Gauss</p>
+    </div>
+    <div class="ferramentas">
+      <label>Exemplo <select id="selecao-exemplo"></select></label>
+      <label>Unidades <select id="selecao-unidades"></select></label>
+      <button id="botao-novo">Nova</button>
+      <button id="botao-abrir">Abrir</button>
+      <input type="file" id="arquivo" accept=".json,application/json" hidden>
+      <button id="botao-salvar">Salvar</button>
+      <button id="botao-imprimir">Imprimir</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="colunas">
+      <section class="painel entrada">
+        <h2>1. Nós, apoios e cargas</h2>
+        <div class="rolagem">
+          <table class="edicao">
+            <thead>
+              <tr>
+                <th>Nó</th>
+                <th>x (<span data-unidade="comprimento"></span>)</th>
+                <th>y (<span data-unidade="comprimento"></span>)</th>
+                <th>Apoio</th>
+                <th>Fx (<span data-unidade="forca"></span>)</th>
+                <th>Fy (<span data-unidade="forca"></span>)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="corpo-nos"></tbody>
+          </table>
+        </div>
+        <button id="botao-adicionar-no" class="adicionar">+ Nó</button>
+        <p class="dica">Fx positivo aponta para a direita; Fy positivo aponta para cima. Carga para baixo = Fy negativo.</p>
+
+        <h2>2. Barras</h2>
+        <div class="rolagem">
+          <table class="edicao">
+            <thead>
+              <tr>
+                <th>Barra</th>
+                <th>Nó inicial</th>
+                <th>Nó final</th>
+                <th>Área (<span data-unidade="area"></span>)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="corpo-barras"></tbody>
+          </table>
+        </div>
+        <button id="botao-adicionar-barra" class="adicionar">+ Barra</button>
+
+        <h2>3. Tensões (opcional)</h2>
+        <div class="campos">
+          <label><span>Área para todas as barras (<span data-unidade="area"></span>)</span>
+            <span class="linha"><input type="number" step="any" min="0" id="area-todas" value="0">
+            <button id="botao-aplicar-area">Aplicar</button></span>
+          </label>
+          <label><span>σ<sub>adm</sub> tração (<span data-unidade="tensao"></span>)</span>
+            <input type="number" step="any" min="0" id="tensao-tracao" value="0">
+          </label>
+          <label><span>σ<sub>adm</sub> compressão (<span data-unidade="tensao"></span>)</span>
+            <input type="number" step="any" min="0" id="tensao-compressao" value="0">
+          </label>
+        </div>
+
+        <button id="botao-calcular" class="principal">Calcular</button>
+      </section>
+
+      <section class="painel desenho-painel">
+        <h2>Desenho</h2>
+        <svg id="desenho" role="img" aria-label="Desenho da treliça"></svg>
+        <ul class="legenda">
+          <li><span class="cor tracao-cor"></span>Tração (+)</li>
+          <li><span class="cor compressao-cor"></span>Compressão (−)</li>
+          <li><span class="cor nula-cor"></span>Força zero</li>
+          <li><span class="cor reacao-cor"></span>Reação de apoio</li>
+          <li><span class="cor carga-cor"></span>Carga aplicada</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="painel">
+      <nav class="abas">
+        <button class="aba" data-aba="resultados">Resultados</button>
+        <button class="aba" data-aba="passo-a-passo">Cálculo passo a passo</button>
+      </nav>
+      <div id="conteudo-resultados"></div>
+      <div id="conteudo-passo-a-passo" hidden></div>
+    </section>
+  </main>
+
+  <script src="js/calculo.js"></script>
+  <script src="js/exemplos.js"></script>
+  <script src="js/formatar.js"></script>
+  <script src="js/desenho.js"></script>
+  <script src="js/passo-a-passo.js"></script>
+  <script src="js/tela.js"></script>
+</body>
+</html>

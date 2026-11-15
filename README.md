@@ -1,139 +1,62 @@
-# Projeto Márcio — N2
+# Treliças Planas — versão do módulo Trusses do MDSolids
 
-Versão própria do módulo **Trusses (Treliças)** do software
-[MdSolids](https://static-archives.git-pages.mst.edu/mdsolids/), desenvolvida como
-trabalho da avaliação N2 (CEFSA).
+Trabalho da avaliação N2 (CEFSA): uma versão própria do módulo **Trusses (Treliças)** do
+[MDSolids](https://static-archives.git-pages.mst.edu/mdsolids/).
 
-O programa recebe uma treliça plana (nós, barras, apoios e cargas nodais) e
-devolve reações de apoio, esforços normais em todas as barras com classificação
-tração/compressão, barras de força zero, deslocamentos, **tensão normal
-(σ = N/A) e área requerida** para uma tensão admissível, além das verificações
-de equilíbrio — com conferência por um método independente.
+O programa recebe uma treliça plana (nós, apoios, cargas e barras) e calcula:
 
-## Como rodar
+- a classificação **isostática / hipostática / hiperestática** (b + r comparado com 2n);
+- as **reações de apoio**;
+- a **força em cada barra**, com **tração (+)**, **compressão (−)** ou **força zero**;
+- a **tensão normal σ = N/A** e a **área necessária** para uma tensão admissível;
+- o **cálculo passo a passo**, com as equações de cada nó, a matriz, a eliminação de Gauss e a
+  prova real.
 
-```powershell
-pip install -r requirements.txt
-python serve.py
-```
+## Como abrir
 
-Abre a interface em <http://127.0.0.1:8000/>. Requisitos: Python 3.11+.
+Não precisa instalar nada. **Dê duplo clique em `index.html`** e ele abre no navegador.
 
-Opções: `python serve.py --port 8123 --no-browser`.
-A documentação automática da API fica em `/docs`.
+1. Escolha um **Exemplo** pronto ou clique em **Nova**.
+2. Preencha os **nós** (x, y, apoio e cargas) e as **barras**.
+3. Clique em **Calcular**.
+4. Veja a aba **Resultados** e a aba **Cálculo passo a passo**.
 
-## O que o programa faz
+## Como o cálculo funciona (resumo)
 
-| Funcionalidade | Onde |
-| --- | --- |
-| Entrada de geometria: **grade por espaçamento e nº de intervalos**, nós e **barras por arraste** | editor + JSON |
-| Apoios: articulação fixa, roleto vertical e horizontal, livre | inspetor do nó |
-| Cargas nodais (Fx, Fy) | inspetor do nó |
-| Estaticidade `b + r` vs `2n` (iso / hipo / hiperestática) | painel de resultados |
-| Reações de apoio por equilíbrio global | tabela de reações |
-| Esforços normais em todas as barras (método matricial da rigidez) | tabela + diagrama |
-| Classificação automática tração / compressão / força zero | tabela + cores no diagrama |
-| Barras de força zero com a regra geométrica justificada | bloco "força zero" |
-| **Tensão normal σ = N/A** por barra (área informada no inspetor) | painel "tensões normais" |
-| **Área requerida** para uma tensão admissível (`A = abs(N)/σ_adm`) | painel "tensões normais" |
-| **Paleta MdSolids opcional** (tração ciano, compressão ouro, força zero magenta) | seletor "Paleta" |
-| Deslocamentos nodais | resumo + diagrama opcional |
-| Verificações: `ΣFx`, `ΣFy`, `ΣM`, resíduo nodal | bloco "verificações" |
-| Conferência independente pelo método dos nós | bloco "verificações" |
-| Casos de erro: hipostática, mecanismo, entrada inválida | mensagens no painel |
-| Relatório imprimível (salvar em PDF) | botão "Relatório" |
-| Importar / exportar JSON | barra superior |
-| 12 casos prontos (incluindo 2 casos de erro) | seletor "Caso pronto" |
-| Operação por teclado no quadro (setas + Enter) e foco visível | editor |
-| Paleta padrão com contraste WCAG AA no texto | diagrama + relatório |
+1. Cada nó dá 2 equações: **ΣFx = 0** e **ΣFy = 0** (método dos nós).
+2. Cada barra é 1 incógnita (N, suposta em tração) e cada reação é 1 incógnita.
+3. Se **b + r = 2n**, o sistema é quadrado: **[A]·{x} = {c}**.
+4. O sistema é resolvido por **eliminação de Gauss** com troca de linhas.
+5. O resultado é conferido colocando os valores de volta em todas as equações.
 
-Convenção fixada em todo o projeto: **N > 0 é tração, N < 0 é compressão**.
-
-## Estrutura
+## Arquivos
 
 ```
-app/
-  core/          domínio puro (sem I/O) — onde mora o cálculo
-    model.py         nós, barras, cargas, validação da entrada
-    determinacy.py   g = b + r − 2n
-    stiffness.py     matriz de rigidez, solução, reações, esforços normais
-    joints.py        método dos nós (conferência independente)
-    equilibrium.py   verificações de equilíbrio global e nodal
-    zero_force.py    regras R1/R2/R3 de barras de força zero
-    stress.py        tensão normal σ = N/A e área requerida
-    units.py         conversão (interno sempre kN, m, N e mm²)
-    solver.py        monta o contrato de saída
-  api/
-    server.py        rotas FastAPI (solve, stress, figure, report, presets)
-    report.py        relatório HTML imprimível
-  render/
-    svg.py           diagrama da treliça em SVG (+ SVG de erro e paletas)
-  web/               interface (HTML + CSS + JS, sem framework)
-data/cases/          12 casos com gabarito (fonte única de testes e presets)
-tests/               suíte pytest (unitários, integração, adversariais, segurança, E2E)
-tools/               geradores (casos, validação, relatórios)
-docs/                enunciado, escopo, plano, teoria, validação, paridade MdSolids
-docs/apresentacao/   slides interativos e roteiro de defesa
-docs/relatorios/     12 relatórios HTML de contingência (gerados)
+index.html               a página
+css/estilo.css           aparência
+js/calculo.js            ★ todo o cálculo (método dos nós + Gauss + tensões)
+js/exemplos.js           exemplos prontos
+js/formatar.js           formatação de números
+js/desenho.js            desenho da treliça
+js/passo-a-passo.js      texto da aba "Cálculo passo a passo"
+js/tela.js               liga a tela ao cálculo
+docs/ROTEIRO_APRESENTACAO.md   ★ roteiro da apresentação com exemplos resolvidos à mão
+docs/COMO_O_CODIGO_FUNCIONA.md explicação do código, função por função
+docs/enunciado.md              texto da proposta do trabalho
 ```
 
-**Regra de ouro:** nenhuma conta de engenharia em JavaScript. O front apenas
-edita e desenha; quem calcula é `app/core`, em Python. Assim existe um único
-lugar para auditar e testar.
+## Convenções
 
-## Testes
+- **N > 0 é tração, N < 0 é compressão** (igual ao MDSolids: *Tension (+)*, *Compression (−)*).
+- Fx positivo aponta para a direita e Fy positivo aponta para cima. Carga para baixo é Fy negativo.
+- Treliça hiperestática e treliça instável são **recusadas com mensagem**, como no MDSolids.
 
-```powershell
-python -m pytest -q
-```
-
-A suíte (474 testes) cobre: os 12 casos da bateria (esforços, reações,
-estaticidade, equilíbrio, conferência cruzada e barras de força zero), validação
-de entrada, propriedades da matriz de rigidez, independência de `EA` na
-isostática e dependência na hiperestática, unidades, regras de força zero, a API
-HTTP, casos adversariais (geometria extrema, mecanismos, entradas hostis) e
-regressões de segurança (escape de HTML/SVG, paleta, dimensões inválidas).
-
-Ferramentas auxiliares:
-
-```powershell
-python tools/build_cases.py        # regera os gabaritos e revalida os 12 casos
-python tools/build_validation.py   # regera docs/validacao.md
-python tools/build_reports.py      # regera docs/relatorios/*.html
-```
-
-## Rotas da API
-
-| Rota | Para que serve |
-| --- | --- |
-| `POST /api/solve` | esforços, reações, verificações, deslocamentos e o bloco de tensão |
-| `POST /api/stress` | `mode="stress"` (σ = N/A com a área de cada barra) ou `mode="area"` (área requerida para uma tensão admissível) |
-| `POST /api/figure` | diagrama SVG; aceita `palette` (`padrao` \| `mdsolids`) e `showStress` |
-| `POST /api/report` | relatório HTML imprimível, com a tabela de tensões quando há áreas |
-| `GET /api/presets` | lista dos 12 casos prontos |
-| `GET /api/health` | estado do serviço |
-
-## Documentação
-
-- [`docs/enunciado.md`](docs/enunciado.md) — texto original da proposta
-- [`docs/plano.md`](docs/plano.md) — plano de execução (fases, arquitetura, riscos)
-- [`docs/escopo-tecnico.md`](docs/escopo-tecnico.md) — escopo funcional e base teórica
-- [`docs/teoria.md`](docs/teoria.md) — **base teórica para a apresentação (4,0 pts)**
-- [`docs/validacao.md`](docs/validacao.md) — registro de validação dos 12 casos
-- [`docs/mdsolids-truss.md`](docs/mdsolids-truss.md) — **evidência do binário oficial e matriz de paridade item a item**
-- [`docs/apresentacao/slides.html`](docs/apresentacao/slides.html) — slides da defesa
-- [`docs/relatorios/index.html`](docs/relatorios/index.html) — dossiê de contingência
-- [`TEST_INFRA.md`](TEST_INFRA.md) — metodologia da suíte de testes
-- [`docs/verificacao-manual.md`](docs/verificacao-manual.md) — checklist de verificação no navegador (roteiro da defesa)
-
-## Requisitos do trabalho (resumo)
+## Requisitos do trabalho
 
 | Item | Peso / observação |
 | --- | --- |
-| Apresentação da parte teórica do modelo | 4,0 pontos — parte mais importante da nota |
-| Bateria de 8 exercícios (funcionalidade e taxa de acerto) | 2,0 pontos — só ocorre se a parte teórica for aprovada |
+| Apresentação da parte teórica do modelo | 4,0 pontos (a parte mais importante) |
+| Bateria de 8 exercícios | 2,0 pontos (só se a parte teórica for aprovada) |
 | Trabalho em duplas (no máximo) | — |
-| Entrega na semana das avaliações N2 (quarta ou quinta, horário alternativo) | Avisar antecipadamente |
-| Presença na prova N2 + assinatura da lista | Condição para a nota |
-
-Detalhes completos em [`docs/enunciado.md`](docs/enunciado.md).
+| Entrega na semana da N2 (quarta ou quinta, horário alternativo) | avisar antes |
+| Presença na prova N2 + assinatura da lista | condição para a nota |
