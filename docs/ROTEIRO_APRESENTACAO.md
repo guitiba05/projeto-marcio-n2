@@ -160,8 +160,9 @@ diminui o comprimento de flambagem das barras comprimidas.
 5. **Cargas:** escreva as componentes. Para baixo é Fy negativo. Para uma carga inclinada F com
    ângulo θ medido a partir da horizontal: `Fx = F·cos θ`, `Fy = F·sen θ` (com o sinal do sentido).
 6. **Barras:** uma linha para cada barra, escolhendo os dois nós.
-7. **Unidades:** escolha o sistema (kN–m–mm²–MPa, N–mm–mm²–MPa, kip–ft–in²–ksi ou
-   lb–in–in²–psi). As forças saem **na mesma unidade da carga**.
+7. **Unidades:** escolha o sistema (kN–mm–mm²–MPa, que é o padrão e o dos exercícios da lista,
+   kN–m–mm²–MPa, N–mm–mm²–MPa, kip–ft–in²–ksi ou lb–in–in²–psi). As forças saem **na mesma
+   unidade da carga**.
 8. (Opcional) **Área** das barras e **σadm** para o cálculo de tensões.
 9. **Calcular.**
 
@@ -553,7 +554,130 @@ coordenadas são digitadas numa tabela, e o resultado é o mesmo.
 
 ---
 
-## 10. Checklist do dia
+## 10. Exercícios da lista do professor (bateria de testes)
+
+Os 5 exercícios da lista estão no seletor "Exemplo" como **Lista — Exercício 1** a **5**.
+Todos são isostáticos e a prova real dá zero em todos.
+
+### 10.1 Como ler a figura e digitar
+
+1. **Unidades:** "kN, mm, mm², MPa" (já é o padrão do programa).
+2. **Coordenadas:** cada linha da grade vale 100 mm. Leia x no eixo de cima e y no eixo da esquerda.
+3. **Confira com o ângulo desenhado:** `tan(ângulo) = Δy / Δx`. Exemplo: 63,435° → 600/300 = 2 → tan 63,435° = 2 ✓.
+   Ângulos comuns: 45° → 1:1 · 56,310° → 3:2 · 63,435° → 2:1 · 71,565° → 3:1 · 80,538° → 6:1 ·
+   83,660° → 9:1 · 75,964° → 4:1 · 74,055° → 7:2 · 33,690° → 2:3 · 26,565° → 1:2 · 18,435° → 1:3 ·
+   11,310° → 1:5 (sempre Δy : Δx).
+4. **Apoios:** triângulo sobre hachura → **Fixo / pino**; bolinha (círculo) → **Rolete (só Ry)**.
+5. **Cargas:** olhe para **onde a ponta da seta aponta**.
+   - ponta para baixo → Fy **negativo**; ponta para cima → Fy **positivo**;
+   - ponta para a direita → Fx **positivo**; ponta para a esquerda → Fx **negativo**.
+6. **Cadastre os nós na ordem A, B, C…**, porque as letras são automáticas. Os nós não precisam
+   estar em ordem de posição.
+7. **Barras:** cadastre na ordem do formulário. O nome sai sempre em ordem alfabética
+   (de C para B vira "BC"), e a tabela de resultados também sai em ordem alfabética.
+8. **Para responder no formulário:** digite o **valor sem o sinal** e escolha o tipo no menu
+   (o sinal + / − do programa já diz se é tração ou compressão). *(Confirme com o professor se o
+   campo espera o valor com ou sem sinal.)*
+
+### 10.2 Exercício 1 — conferido à mão
+
+Dados: A (100; 200) fixo · B (400; 800) com 22 kN → e 15 kN ↓ · C (1000; 200) rolete.
+Barras AB, AC, BC.
+
+```
+Reações:
+ΣFx = 0:  Ax + 22 = 0                                 →  Ax = −22,000 kN
+ΣMA = 0:  900·Cy + 300·(−15) − 600·22 = 0             →  Cy = 17700 / 900 = 19,667 kN
+ΣFy = 0:  Ay + 19,667 − 15 = 0                        →  Ay = −4,667 kN
+
+Nó C:  barra CB aponta para (−600; 600)/848,53 = (−0,7071; 0,7071)
+       ΣFy:  0,7071·NBC + 19,667 = 0                  →  NBC = −27,813 kN  (compressão)
+       ΣFx:  −NAC − 0,7071·(−27,813) = 0              →  NAC = +19,667 kN  (tração)
+Nó A:  barra AB aponta para (300; 600)/670,82 = (0,4472; 0,8944)
+       ΣFy:  0,8944·NAB − 4,667 = 0                   →  NAB = +5,217 kN   (tração)
+       ΣFx:  0,4472·5,217 + 19,667 − 22 = 0  ✓
+```
+
+### 10.3 Respostas
+
+**Exercício 1** — reações Ax = −22,000 · Ay = −4,667 · Cy = +19,667 kN
+
+| Barra | Valor (kN) | Tipo |
+|---|---|---|
+| AB | 5,217 | Tração |
+| AC | 19,667 | Tração |
+| BC | 27,813 | Compressão |
+
+**Exercício 2** — A (0; 200) fixo · B (1000; 200) rolete · C (100; 800) 42 kN ↑ · D (600; 800) 11 kN → e 7,5 kN ↑
+Reações Ax = −11,000 · Ay = −47,400 · By = −2,100 kN
+
+| Barra | Valor (kN) | Tipo |
+|---|---|---|
+| AB | 3,100 | Tração |
+| AC | 48,054 | Tração |
+| BC | 9,735 | Compressão |
+| BD | 9,014 | Tração |
+| CD | 16,000 | Tração |
+
+**Exercício 3** — A (0; 200) rolete · B (300; 200) 15 kN ↓ · C (1000; 200) fixo · D (100; 800) 22 kN → · E (400; 800) 30 kN → e 8,5 kN ↑
+Reações Ay = −25,800 · Cx = −52,000 · Cy = +32,300 kN
+
+| Barra | Valor (kN) | Tipo |
+|---|---|---|
+| AB | 4,300 | Compressão |
+| AD | 26,156 | Tração |
+| BC | 19,700 | Compressão |
+| BD | 27,196 | Compressão |
+| BE | 41,363 | Tração |
+| CE | 45,679 | Compressão |
+| DE | 9,100 | Compressão |
+
+**Exercício 4** — A (0; 200) fixo · B (300; 200) 13 kN ↓ · C (600; 200) 21,5 kN → · D (1000; 200) rolete ·
+E (100; 800) 14 kN ← · F (400; 800) 8 kN ↓ · G (600; 800) 12,25 kN → e 6 kN ↑
+Reações Ax = −19,750 · Ay = +12,550 · Dy = +2,450 kN
+
+| Barra | Valor (kN) | Tipo |
+|---|---|---|
+| AB | 21,842 | Tração |
+| AE | 12,723 | Compressão |
+| BC | 25,950 | Tração |
+| BE | 13,229 | Tração |
+| BF | 0,456 | Tração |
+| CD | 1,633 | Tração |
+| CF | 8,907 | Compressão |
+| CG | 8,450 | Tração |
+| DG | 2,945 | Compressão |
+| EF | 7,725 | Tração |
+| FG | 10,617 | Tração |
+
+**Exercício 5** — A (0; 0) fixo · B (300; 100) 44,5 kN ↓ · C (500; 200) 32,5 kN ↓ · D (1000; 300) rolete ·
+E (800; 500) 12 kN → e 11,6 kN ↓ · F (500; 800) 12,5 kN → e 8,7 kN ↑ · G (100; 900) 4 kN ↓ · H (300; 900) 8,5 kN → e 2,5 kN ↑
+Reações Ax = −33,000 · Ay = +23,570 · Dy = +57,830 kN
+
+| Barra | Valor (kN) | Tipo |
+|---|---|---|
+| AB | 38,990 | Tração |
+| AG | 36,121 | Compressão |
+| BC | 54,104 | Tração |
+| BF | 12,478 | Compressão |
+| BH | 12,732 | Tração |
+| BG | 32,881 | Tração |
+| CD | 49,146 | Tração |
+| CE | 0,283 | Tração |
+| CF | 46,858 | Tração |
+| DE | 68,153 | Compressão |
+| EF | 51,466 | Compressão |
+| FH | 22,879 | Compressão |
+| GH | 11,964 | Compressão |
+
+> No formulário do Exercício 5, **BH vem antes de BG**. Na tela do programa a ordem é alfabética
+> (BG antes de BH). Cuidado para não trocar as duas na hora de digitar.
+>
+> BF = 0,456 kN (Ex. 4) e CE = 0,283 kN (Ex. 5) são **pequenas, mas não são zero**: são tração.
+
+---
+
+## 11. Checklist do dia
 
 - [ ] Avisar o professor **com antecedência** que vão entregar (quarta ou quinta da semana da N2).
 - [ ] Estar **presente na prova N2** e **assinar a lista**: sem isso a nota não vale.

@@ -55,11 +55,11 @@ arquivo salvo pelo botão "Salvar". Para o Exemplo 1:
 
 - A carga fica **dentro do nó** (`fx`, `fy`).
 - O apoio é uma palavra (`fixo`, `rolete_y`, `rolete_x`, `livre`).
-- A barra só guarda os **nomes** dos dois nós. O nome da barra é a junção deles (`'A' + 'B' = 'AB'`).
+- A barra só guarda os **nomes** dos dois nós. O nome da barra é a junção deles em ordem alfabética (de A para B ou de B para A, o nome é sempre `AB`, igual aos formulários de resposta).
 
 ## 4. `calculo.js` — função por função
 
-A função principal é `resolverTrelica` (linha 226). Ela chama as outras nesta ordem:
+A função principal é `resolverTrelica` (linha 227). Ela chama as outras nesta ordem:
 
 ```
 resolverTrelica
@@ -75,7 +75,7 @@ resolverTrelica
  └─ calcularTensoes         σ = N/A e área necessária
 ```
 
-### 4.1 Tabelas de configuração (linhas 1–16)
+### 4.1 Tabelas de configuração (linhas 1–17)
 
 ```js
 const TIPOS_DE_APOIO = {
@@ -96,18 +96,18 @@ espalhado pelo programa.
 `TOLERANCIA_PIVO` (10⁻⁹) é o limite abaixo do qual o pivô é considerado zero. `LIMITE_FORCA_ZERO`
 (10⁻⁶) é o limite abaixo do qual uma força vira 0 (força zero).
 
-### 4.2 `medirBarra` (linha 26)
+### 4.2 `medirBarra` (linha 27)
 
 Calcula `Δx = x_final − x_inicial`, `Δy`, `L = √(Δx² + Δy²)`, `cos = Δx/L` e `sen = Δy/L`.
 Serve para mostrar a geometria no passo a passo e o comprimento na tabela.
 
-### 4.3 `validarTrelica` (linha 42)
+### 4.3 `validarTrelica` (linha 43)
 
 Antes de qualquer conta, procura erros de digitação: menos de 2 nós, nenhuma barra, nome
 repetido, barra ligando o nó a ele mesmo, barra de comprimento zero, barra repetida e nó solto
 (sem barra). Devolve uma lista de mensagens. Lista vazia quer dizer que está tudo certo.
 
-### 4.4 `listarIncognitas` (linha 79)
+### 4.4 `listarIncognitas` (linha 80)
 
 Monta o vetor de incógnitas **x**:
 
@@ -117,7 +117,7 @@ Monta o vetor de incógnitas **x**:
 Para o triângulo: `x = [NAB, NAC, NBC, Ax, Ay, By]`. A **posição** de cada incógnita nessa lista
 será a **coluna** dela na matriz.
 
-### 4.5 `classificarEstaticidade` (linha 98)
+### 4.5 `classificarEstaticidade` (linha 99)
 
 ```js
 const n = trelica.nos.length;
@@ -130,7 +130,7 @@ if (b + r > 2 * n) tipo = 'hiperestática';
 
 É a fórmula b + r = 2n escrita em código.
 
-### 4.6 `coeficiente` (linha 108) — o coração do método dos nós
+### 4.6 `coeficiente` (linha 109) — o coração do método dos nós
 
 Responde: **"na equação ΣF(direção) do nó X, qual número multiplica esta incógnita?"**
 
@@ -163,7 +163,7 @@ nó. Exemplo: no nó C do triângulo, a barra AC aponta de C (2; 3) para A (0; 0
 `(−2; −3) ÷ 3,6056 = (−0,5547; −0,8321)`. Esses são os coeficientes de NAC nas equações ΣFx e
 ΣFy do nó C.
 
-### 4.7 `montarSistema` (linha 121)
+### 4.7 `montarSistema` (linha 122)
 
 ```js
 trelica.nos.forEach(no => {
@@ -182,7 +182,7 @@ outro lado fica `soma(coef × incógnita) = −carga`, por isso o vetor recebe `
 
 Resultado: `matriz` com 2n linhas × (b + r) colunas e `vetor` com 2n valores.
 
-### 4.8 `resolverPorGauss` (linha 136)
+### 4.8 `resolverPorGauss` (linha 137)
 
 Resolve `[A]·{x} = {c}` em duas fases.
 
@@ -207,7 +207,7 @@ solucao[linha] = (c[linha] − Σ a[linha][k]·solucao[k]) / a[linha][linha]
 Cada troca e cada eliminação ficam gravadas em `etapas`, que é o que a aba "Cálculo passo a passo"
 lista no Passo 6. A função devolve também a matriz já escalonada.
 
-### 4.9 `resolverTrelica` (linha 226) — o roteiro completo
+### 4.9 `resolverTrelica` (linha 227) — o roteiro completo
 
 1. Valida. Se houver erro, para e devolve as mensagens.
 2. Lista incógnitas, classifica, mede as barras e monta o sistema.
@@ -222,7 +222,7 @@ lista no Passo 6. A função devolve também a matriz já escalonada.
 O objeto `resultado` devolvido tem **tudo** (dados, incógnitas, matriz, etapas do Gauss, forças,
 reações, conferência e tensões). Por isso o passo a passo consegue mostrar cada etapa.
 
-### 4.10 `calcularTensoes` (linha 302)
+### 4.10 `calcularTensoes` (linha 303)
 
 ```js
 const tensao = barra.forca * unidades.fatorTensao / barra.area;                  // σ = N/A
@@ -241,6 +241,8 @@ Se a área ou o σadm não foram informados, aquela coluna fica vazia ("—").
 - Qualquer mudança chama `aoMudarDados`, que redesenha e apaga o resultado antigo (para não
   mostrar resultado de dados velhos).
 - `calcular` chama `resolverTrelica` e depois os três "mostradores".
+- `mostrarResultados` lista as barras em ordem alfabética (`ordemAlfabetica`), como nos formulários
+  de resposta, sem mudar a ordem das incógnitas na matriz.
 - Os nomes dos nós são letras automáticas (`proximoNomeLivre`), como no MDSolids.
 - Salvar/Abrir: transforma o objeto em JSON e vice-versa. `normalizarTrelica` limpa o arquivo
   aberto (aceita só números, nomes com letras/dígitos e tipos de apoio conhecidos).
@@ -263,7 +265,7 @@ Se a área ou o σadm não foram informados, aquela coluna fica vazia ("—").
 ## 6. Perguntas sobre o código que podem aparecer
 
 **Onde está o método dos nós?**
-Em `coeficiente` + `montarSistema` (`calculo.js`, linhas 108–134): uma linha da matriz para cada
+Em `coeficiente` + `montarSistema` (`calculo.js`, linhas 109–135): uma linha da matriz para cada
 ΣFx e ΣFy de cada nó.
 
 **Onde ele descobre que a treliça é instável?**

@@ -9,6 +9,7 @@ const TIPOS_DE_APOIO = {
 };
 
 const SISTEMAS_DE_UNIDADES = {
+  kn_mm: { descricao: 'kN, mm, mm², MPa', forca: 'kN', comprimento: 'mm', area: 'mm²', tensao: 'MPa', fatorTensao: 1000 },
   si_kn: { descricao: 'kN, m, mm², MPa', forca: 'kN', comprimento: 'm', area: 'mm²', tensao: 'MPa', fatorTensao: 1000 },
   si_n: { descricao: 'N, mm, mm², MPa', forca: 'N', comprimento: 'mm', area: 'mm²', tensao: 'MPa', fatorTensao: 1 },
   us_kip: { descricao: 'kip, ft, in², ksi', forca: 'kip', comprimento: 'ft', area: 'in²', tensao: 'ksi', fatorTensao: 1 },
@@ -16,7 +17,7 @@ const SISTEMAS_DE_UNIDADES = {
 };
 
 function nomeDaBarra(barra) {
-  return barra.no1 + barra.no2;
+  return [barra.no1, barra.no2].sort().join('');
 }
 
 function buscarNo(trelica, nome) {

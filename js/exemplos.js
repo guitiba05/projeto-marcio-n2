@@ -44,7 +44,85 @@ const EXEMPLOS = [
     barras: criarBarras([['A', 'B'], ['B', 'C'], ['C', 'D'], ['A', 'E'], ['E', 'F'], ['D', 'F'], ['B', 'E'], ['C', 'F'], ['B', 'F']], 0)
   },
   {
-    titulo: '4. Treliça Warren',
+    titulo: 'Lista — Exercício 1',
+    unidades: 'kn_mm',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 100, y: 200, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'B', x: 400, y: 800, apoio: 'livre', fx: 22, fy: -15 },
+      { nome: 'C', x: 1000, y: 200, apoio: 'rolete_y', fx: 0, fy: 0 }
+    ],
+    barras: criarBarras([['A', 'B'], ['A', 'C'], ['B', 'C']], 0)
+  },
+  {
+    titulo: 'Lista — Exercício 2',
+    unidades: 'kn_mm',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 0, y: 200, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'B', x: 1000, y: 200, apoio: 'rolete_y', fx: 0, fy: 0 },
+      { nome: 'C', x: 100, y: 800, apoio: 'livre', fx: 0, fy: 42 },
+      { nome: 'D', x: 600, y: 800, apoio: 'livre', fx: 11, fy: 7.5 }
+    ],
+    barras: criarBarras([['A', 'B'], ['A', 'C'], ['B', 'C'], ['B', 'D'], ['C', 'D']], 0)
+  },
+  {
+    titulo: 'Lista — Exercício 3',
+    unidades: 'kn_mm',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 0, y: 200, apoio: 'rolete_y', fx: 0, fy: 0 },
+      { nome: 'B', x: 300, y: 200, apoio: 'livre', fx: 0, fy: -15 },
+      { nome: 'C', x: 1000, y: 200, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'D', x: 100, y: 800, apoio: 'livre', fx: 22, fy: 0 },
+      { nome: 'E', x: 400, y: 800, apoio: 'livre', fx: 30, fy: 8.5 }
+    ],
+    barras: criarBarras([['A', 'B'], ['A', 'D'], ['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'E'], ['D', 'E']], 0)
+  },
+  {
+    titulo: 'Lista — Exercício 4',
+    unidades: 'kn_mm',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 0, y: 200, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'B', x: 300, y: 200, apoio: 'livre', fx: 0, fy: -13 },
+      { nome: 'C', x: 600, y: 200, apoio: 'livre', fx: 21.5, fy: 0 },
+      { nome: 'D', x: 1000, y: 200, apoio: 'rolete_y', fx: 0, fy: 0 },
+      { nome: 'E', x: 100, y: 800, apoio: 'livre', fx: -14, fy: 0 },
+      { nome: 'F', x: 400, y: 800, apoio: 'livre', fx: 0, fy: -8 },
+      { nome: 'G', x: 600, y: 800, apoio: 'livre', fx: 12.25, fy: 6 }
+    ],
+    barras: criarBarras([
+      ['A', 'B'], ['A', 'E'], ['B', 'C'], ['B', 'E'], ['B', 'F'], ['C', 'D'],
+      ['C', 'F'], ['C', 'G'], ['D', 'G'], ['E', 'F'], ['F', 'G']
+    ], 0)
+  },
+  {
+    titulo: 'Lista — Exercício 5',
+    unidades: 'kn_mm',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 0, y: 0, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'B', x: 300, y: 100, apoio: 'livre', fx: 0, fy: -44.5 },
+      { nome: 'C', x: 500, y: 200, apoio: 'livre', fx: 0, fy: -32.5 },
+      { nome: 'D', x: 1000, y: 300, apoio: 'rolete_y', fx: 0, fy: 0 },
+      { nome: 'E', x: 800, y: 500, apoio: 'livre', fx: 12, fy: -11.6 },
+      { nome: 'F', x: 500, y: 800, apoio: 'livre', fx: 12.5, fy: 8.7 },
+      { nome: 'G', x: 100, y: 900, apoio: 'livre', fx: 0, fy: -4 },
+      { nome: 'H', x: 300, y: 900, apoio: 'livre', fx: 8.5, fy: 2.5 }
+    ],
+    barras: criarBarras([
+      ['A', 'B'], ['A', 'G'], ['B', 'C'], ['B', 'F'], ['B', 'H'], ['B', 'G'], ['C', 'D'],
+      ['C', 'E'], ['C', 'F'], ['D', 'E'], ['E', 'F'], ['F', 'H'], ['G', 'H']
+    ], 0)
+  },
+  {
+    titulo: 'Extra: Treliça Warren',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,
     tensaoAdmCompressao: 0,
@@ -60,7 +138,7 @@ const EXEMPLOS = [
     barras: criarBarras([['A', 'B'], ['B', 'C'], ['C', 'D'], ['E', 'F'], ['F', 'G'], ['A', 'E'], ['E', 'B'], ['B', 'F'], ['F', 'C'], ['C', 'G'], ['G', 'D']], 0)
   },
   {
-    titulo: '5. Pratt com carga de vento',
+    titulo: 'Extra: Pratt com carga de vento',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,
     tensaoAdmCompressao: 0,
@@ -77,7 +155,7 @@ const EXEMPLOS = [
     barras: criarBarras([['A', 'B'], ['B', 'C'], ['C', 'D'], ['E', 'F'], ['F', 'G'], ['G', 'H'], ['A', 'E'], ['B', 'F'], ['C', 'G'], ['D', 'H'], ['E', 'B'], ['F', 'C'], ['G', 'D']], 0)
   },
   {
-    titulo: '6. Telhado de duas águas',
+    titulo: 'Extra: Telhado de duas águas',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,
     tensaoAdmCompressao: 0,
@@ -94,7 +172,7 @@ const EXEMPLOS = [
     barras: criarBarras([['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'E'], ['A', 'F'], ['F', 'G'], ['G', 'H'], ['H', 'E'], ['B', 'F'], ['C', 'G'], ['D', 'H'], ['F', 'C'], ['H', 'C']], 0)
   },
   {
-    titulo: '7. Geometria irregular com cargas inclinadas',
+    titulo: 'Extra: Geometria irregular com cargas inclinadas',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,
     tensaoAdmCompressao: 0,
@@ -107,7 +185,7 @@ const EXEMPLOS = [
     barras: criarBarras([['A', 'B'], ['A', 'C'], ['C', 'D'], ['D', 'B'], ['A', 'D']], 0)
   },
   {
-    titulo: '8. Ponte Pratt grande (14 nós)',
+    titulo: 'Extra: Ponte Pratt grande (14 nós)',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,
     tensaoAdmCompressao: 0,

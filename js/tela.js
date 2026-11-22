@@ -22,7 +22,7 @@ function proximoNomeLivre() {
 }
 
 function criarTrelicaVazia() {
-  return { unidades: 'si_kn', tensaoAdmTracao: 0, tensaoAdmCompressao: 0, nos: [], barras: [] };
+  return { unidades: 'kn_mm', tensaoAdmTracao: 0, tensaoAdmCompressao: 0, nos: [], barras: [] };
 }
 
 function normalizarTrelica(dados) {
@@ -124,7 +124,9 @@ function mostrarResultados() {
   const u = SISTEMAS_DE_UNIDADES[trelica.unidades];
   const e = r.estaticidade;
   const linhasReacoes = r.reacoes.map(reacao => `<tr><td>${reacao.nome}</td><td class="numero">${formatarComSinal(reacao.valor)}</td></tr>`).join('');
-  const linhasBarras = r.barras.map((barra, i) => {
+  const ordemAlfabetica = r.barras.map((barra, i) => i).sort((i, j) => r.barras[i].nome.localeCompare(r.barras[j].nome));
+  const linhasBarras = ordemAlfabetica.map(i => {
+    const barra = r.barras[i];
     const t = r.tensoes[i];
     const classe = barra.situacao === 'Tração' ? 'tracao' : barra.situacao === 'Compressão' ? 'compressao' : 'nula';
     return `<tr><td>${barra.nome}</td><td class="numero">${formatarNumero(barra.comprimento)}</td>
