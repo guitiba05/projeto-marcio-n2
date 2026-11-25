@@ -75,13 +75,16 @@ function passoIncognitas(resultado) {
 
 function passoGeometria(resultado, unidades) {
   const linhas = resultado.geometria.map(g => `<tr><td>${g.nome}</td><td>${formatarNumero(g.dx, 3)}</td><td>${formatarNumero(g.dy, 3)}</td>
-    <td>${formatarNumero(g.comprimento, 4)}</td><td>${formatarNumero(g.cos, 4)}</td><td>${formatarNumero(g.sen, 4)}</td></tr>`).join('');
+    <td>${formatarNumero(g.comprimento, 4)}</td><td>${formatarNumero(g.cos, 4)}</td><td>${formatarNumero(g.sen, 4)}</td><td>${formatarNumero(g.angulo, 3)}</td></tr>`).join('');
   return `<section class="passo">
     <h3>Passo 3 — Geometria de cada barra</h3>
     <p>Δx = x<sub>final</sub> − x<sub>inicial</sub>, Δy = y<sub>final</sub> − y<sub>inicial</sub>,
       L = √(Δx² + Δy²), cos θ = Δx / L e sen θ = Δy / L. O cos e o sen dizem quanto da força da barra vai para x e quanto vai para y.</p>
+    <p>A coluna <strong>Ângulo</strong> é o ângulo agudo da barra com a horizontal, α = arctan(|Δy| / |Δx|), o mesmo valor
+      que aparece nas figuras dos exercícios. Ele não entra na conta (o programa usa cos e sen); serve para conferir se as
+      coordenadas foram digitadas certo.</p>
     <div class="rolagem"><table class="dados">
-      <thead><tr><th>Barra</th><th>Δx (${unidades.comprimento})</th><th>Δy (${unidades.comprimento})</th><th>L (${unidades.comprimento})</th><th>cos θ</th><th>sen θ</th></tr></thead>
+      <thead><tr><th>Barra</th><th>Δx (${unidades.comprimento})</th><th>Δy (${unidades.comprimento})</th><th>L (${unidades.comprimento})</th><th>cos θ</th><th>sen θ</th><th>Ângulo α (°)</th></tr></thead>
       <tbody>${linhas}</tbody></table></div>
   </section>`;
 }
@@ -190,6 +193,8 @@ function passoResultados(resultado, unidades) {
     <td class="numero">${formatarComSinal(barra.forca)}</td><td class="${barra.situacao === 'Tração' ? 'tracao' : barra.situacao === 'Compressão' ? 'compressao' : 'nula'}">${barra.situacao}</td></tr>`).join('');
   const linhasReacoes = resultado.reacoes.map(reacao => {
     const sentido = reacao.valor === 0 ? 'nula' :
+      reacao.direcao === 'n' ? (reacao.valor > 0 ? 'saindo da superfície' : 'entrando na superfície') +
+        ` (Fx = ${formatarComSinal(reacao.fx)}, Fy = ${formatarComSinal(reacao.fy)})` :
       reacao.direcao === 'x' ? (reacao.valor > 0 ? 'para a direita →' : 'para a esquerda ←') :
       (reacao.valor > 0 ? 'para cima ↑' : 'para baixo ↓');
     return `<tr><td>${reacao.nome}</td><td class="numero">${formatarComSinal(reacao.valor)}</td><td>${sentido}</td></tr>`;
@@ -224,9 +229,7 @@ function passoConferencia(resultado, unidades) {
   };
   trelica.nos.forEach(no => adicionarMomento(no, no.fx, no.fy));
   reacoes.forEach(reacao => {
-    const no = buscarNo(trelica, reacao.no);
-    if (reacao.direcao === 'x') adicionarMomento(no, reacao.valor, 0);
-    else adicionarMomento(no, 0, reacao.valor);
+    adicionarMomento(buscarNo(trelica, reacao.no), reacao.fx, reacao.fy);
   });
 
   return `<section class="passo">

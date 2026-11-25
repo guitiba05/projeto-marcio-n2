@@ -17,7 +17,8 @@ O programa recebe uma treliça plana (nós, apoios, cargas e barras) e calcula:
 Não precisa instalar nada. **Dê duplo clique em `index.html`** e ele abre no navegador.
 
 1. Escolha um **Exemplo** pronto ou clique em **Nova**.
-2. Preencha os **nós** (x, y, apoio e cargas) e as **barras**.
+2. Preencha os **nós** (x, y, apoio e cargas) e as **barras**. O nome do nó pode ser editado.
+   Para carga inclinada, use o quadro **Carga inclinada** (módulo e ângulo).
 3. Clique em **Calcular**.
 4. Veja a aba **Resultados** e a aba **Cálculo passo a passo**.
 

@@ -59,6 +59,7 @@ tem **uma única incógnita**: a força normal **N**.
 | Fixo / pino | triângulo | Rx e Ry | 2 |
 | Rolete (só Ry) | triângulo com rodinhas | Ry | 1 |
 | Rolete (só Rx) | triângulo de lado | Rx | 1 |
+| Rolete inclinado (α) | rolete sobre um plano inclinado de α | Rn, perpendicular ao plano | 1 |
 | Livre | — | nenhuma | 0 |
 
 ### 1.4 Equilíbrio de um nó
@@ -152,13 +153,17 @@ diminui o comprimento de flambagem das barras comprimidas.
 ## 2. Como obter os dados (do enunciado para a tela)
 
 1. **Escolha uma origem** (normalmente o apoio da esquerda em (0; 0)).
-2. **Dê nome aos nós** na ordem em que aparecem. O programa usa letras automáticas A, B, C…,
-   então cadastre os nós na mesma ordem das letras do enunciado.
+2. **Dê nome aos nós.** O programa sugere letras automáticas A, B, C…, mas o nome é editável:
+   clique nele e digite o nome da figura (as barras ligadas ao nó são renomeadas junto).
 3. **Calcule as coordenadas** de cada nó a partir das cotas da figura (vãos e alturas).
 4. **Apoios:** pino → "Fixo"; rolete sobre o chão → "Rolete (só Ry)"; rolete numa parede →
-   "Rolete (só Rx)".
-5. **Cargas:** escreva as componentes. Para baixo é Fy negativo. Para uma carga inclinada F com
-   ângulo θ medido a partir da horizontal: `Fx = F·cos θ`, `Fy = F·sen θ` (com o sinal do sentido).
+   "Rolete (só Rx)"; rolete sobre um plano inclinado → "Rolete inclinado" e digite α, a inclinação
+   do plano em relação à horizontal (anti-horário). A reação Rn é perpendicular ao plano e o
+   programa mostra as componentes Fx e Fy dela.
+5. **Cargas:** horizontal e vertical vão direto em Fx e Fy (para baixo é Fy negativo). Para uma
+   carga inclinada, use o quadro **Carga inclinada**: escolha o nó, digite F e o ângulo θ medido a
+   partir do eixo x positivo no sentido anti-horário (0° direita, 90° cima, 180° esquerda,
+   270° baixo). O programa mostra `Fx = F·cos θ` e `Fy = F·sen θ` antes e soma ao nó.
 6. **Barras:** uma linha para cada barra, escolhendo os dois nós.
 7. **Unidades:** escolha o sistema (kN–mm–mm²–MPa, que é o padrão e o dos exercícios da lista,
    kN–m–mm²–MPa, N–mm–mm²–MPa, kip–ft–in²–ksi ou lb–in–in²–psi). As forças saem **na mesma
@@ -515,7 +520,8 @@ Tem mais incógnitas que equações. Para resolver seria preciso considerar a de
 Na isostática, não: N vem só do equilíbrio. A área só entra depois, para a tensão σ = N/A.
 
 **Como entram cargas inclinadas?**
-Pelas componentes: Fx = F·cos θ e Fy = F·sen θ.
+Pelas componentes: Fx = F·cos θ e Fy = F·sen θ. O quadro "Carga inclinada" faz essa conta
+(função `decomporCarga` no `calculo.js`) e soma o resultado ao Fx e Fy do nó.
 
 **Qual a precisão?**
 O programa coloca a resposta de volta em todas as equações (Passo 8). Os resíduos ficam na casa de
@@ -533,9 +539,9 @@ deslocamentos e só aceita cargas nos nós. As mesmas limitações do módulo Tr
 |---|---|
 | Definir nós (pontos da grade) | tabela de nós com x e y |
 | Barras ligando nós | tabela de barras |
-| Apoio pino e rolete (em x ou em y) | Fixo, Rolete (só Ry), Rolete (só Rx) |
-| Cargas nodais em x e y | Fx e Fy em cada nó |
-| Letras automáticas nos nós | A, B, C… |
+| Apoio pino e rolete (em x ou em y) | Fixo, Rolete (só Ry), Rolete (só Rx) e Rolete inclinado (α qualquer) |
+| Cargas nodais em x e y | Fx e Fy em cada nó, ou módulo e ângulo no quadro "Carga inclinada" |
+| Letras automáticas nos nós | A, B, C… (e o nome pode ser trocado) |
 | Verificação b + r = 2n | Passo 2 e mensagem |
 | Recusa de treliça hiperestática | mensagem "hiperestática" |
 | Recusa de treliça instável | mensagem "geometricamente instável" e coluna sem pivô |
@@ -567,12 +573,16 @@ Todos são isostáticos e a prova real dá zero em todos.
    Ângulos comuns: 45° → 1:1 · 56,310° → 3:2 · 63,435° → 2:1 · 71,565° → 3:1 · 80,538° → 6:1 ·
    83,660° → 9:1 · 75,964° → 4:1 · 74,055° → 7:2 · 33,690° → 2:3 · 26,565° → 1:2 · 18,435° → 1:3 ·
    11,310° → 1:5 (sempre Δy : Δx).
+   Atalho: depois de digitar, o programa mostra esse mesmo ângulo na coluna **Ângulo (°)** dos
+   resultados e no Passo 3. Basta comparar com a figura; se um valor não bater, há um nó no lugar errado.
+   O ângulo não é digitado: ele sai das coordenadas e não entra na conta (o cálculo usa cos e sen).
 4. **Apoios:** triângulo sobre hachura → **Fixo / pino**; bolinha (círculo) → **Rolete (só Ry)**.
 5. **Cargas:** olhe para **onde a ponta da seta aponta**.
    - ponta para baixo → Fy **negativo**; ponta para cima → Fy **positivo**;
    - ponta para a direita → Fx **positivo**; ponta para a esquerda → Fx **negativo**.
-6. **Cadastre os nós na ordem A, B, C…**, porque as letras são automáticas. Os nós não precisam
-   estar em ordem de posição.
+6. **Nomes dos nós:** o programa sugere A, B, C… na ordem em que os nós são criados. Se a figura
+   usar outro nome, ou se um nó foi criado fora de ordem, clique no nome e corrija: as barras
+   acompanham. Os nós não precisam estar em ordem de posição.
 7. **Barras:** cadastre na ordem do formulário. O nome sai sempre em ordem alfabética
    (de C para B vira "BC"), e a tabela de resultados também sai em ordem alfabética.
 8. **Para responder no formulário:** digite o **valor sem o sinal** e escolha o tipo no menu

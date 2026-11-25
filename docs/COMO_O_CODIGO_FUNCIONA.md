@@ -54,12 +54,13 @@ arquivo salvo pelo botão "Salvar". Para o Exemplo 1:
 ```
 
 - A carga fica **dentro do nó** (`fx`, `fy`).
-- O apoio é uma palavra (`fixo`, `rolete_y`, `rolete_x`, `livre`).
+- O apoio é uma palavra (`fixo`, `rolete_y`, `rolete_x`, `rolete_inclinado`, `livre`). No rolete inclinado, o nó
+  guarda também `anguloApoio` (α, inclinação da superfície em graus).
 - A barra só guarda os **nomes** dos dois nós. O nome da barra é a junção deles em ordem alfabética (de A para B ou de B para A, o nome é sempre `AB`, igual aos formulários de resposta).
 
 ## 4. `calculo.js` — função por função
 
-A função principal é `resolverTrelica` (linha 227). Ela chama as outras nesta ordem:
+A função principal é `resolverTrelica` (linha 235). Ela chama as outras nesta ordem:
 
 ```
 resolverTrelica
@@ -75,14 +76,15 @@ resolverTrelica
  └─ calcularTensoes         σ = N/A e área necessária
 ```
 
-### 4.1 Tabelas de configuração (linhas 1–17)
+### 4.1 Tabelas de configuração (linhas 1–18)
 
 ```js
 const TIPOS_DE_APOIO = {
   livre:    { descricao: 'Livre (sem apoio)',     reacoes: [] },
   fixo:     { descricao: 'Fixo / pino (Rx e Ry)', reacoes: ['x', 'y'] },
   rolete_y: { descricao: 'Rolete (só Ry)',        reacoes: ['y'] },
-  rolete_x: { descricao: 'Rolete (só Rx)',        reacoes: ['x'] }
+  rolete_x: { descricao: 'Rolete (só Rx)',        reacoes: ['x'] },
+  rolete_inclinado: { descricao: 'Rolete inclinado (Rn ⟂ superfície)', reacoes: ['n'] }
 };
 ```
 
@@ -96,18 +98,21 @@ espalhado pelo programa.
 `TOLERANCIA_PIVO` (10⁻⁹) é o limite abaixo do qual o pivô é considerado zero. `LIMITE_FORCA_ZERO`
 (10⁻⁶) é o limite abaixo do qual uma força vira 0 (força zero).
 
-### 4.2 `medirBarra` (linha 27)
+### 4.2 `medirBarra` (linha 35)
 
 Calcula `Δx = x_final − x_inicial`, `Δy`, `L = √(Δx² + Δy²)`, `cos = Δx/L` e `sen = Δy/L`.
+Também calcula o **ângulo agudo com a horizontal**, `α = arctan(|Δy| / |Δx|)` em graus, que é o valor
+escrito nas figuras dos exercícios. O ângulo não entra no cálculo (a matriz usa cos e sen); ele só aparece
+no Passo 3 e na coluna "Ângulo" dos resultados, para conferir se as coordenadas foram digitadas certo.
 Serve para mostrar a geometria no passo a passo e o comprimento na tabela.
 
-### 4.3 `validarTrelica` (linha 43)
+### 4.3 `validarTrelica` (linha 52)
 
 Antes de qualquer conta, procura erros de digitação: menos de 2 nós, nenhuma barra, nome
 repetido, barra ligando o nó a ele mesmo, barra de comprimento zero, barra repetida e nó solto
 (sem barra). Devolve uma lista de mensagens. Lista vazia quer dizer que está tudo certo.
 
-### 4.4 `listarIncognitas` (linha 80)
+### 4.4 `listarIncognitas` (linha 90)
 
 Monta o vetor de incógnitas **x**:
 
@@ -117,7 +122,7 @@ Monta o vetor de incógnitas **x**:
 Para o triângulo: `x = [NAB, NAC, NBC, Ax, Ay, By]`. A **posição** de cada incógnita nessa lista
 será a **coluna** dela na matriz.
 
-### 4.5 `classificarEstaticidade` (linha 99)
+### 4.5 `classificarEstaticidade` (linha 109)
 
 ```js
 const n = trelica.nos.length;
@@ -130,14 +135,16 @@ if (b + r > 2 * n) tipo = 'hiperestática';
 
 É a fórmula b + r = 2n escrita em código.
 
-### 4.6 `coeficiente` (linha 109) — o coração do método dos nós
+### 4.6 `coeficiente` (linha 119) — o coração do método dos nós
 
 Responde: **"na equação ΣF(direção) do nó X, qual número multiplica esta incógnita?"**
 
 ```js
 function coeficiente(trelica, no, direcao, incognita) {
   if (incognita.tipo === 'reacao') {
-    return incognita.no === no.nome && incognita.direcao === direcao ? 1 : 0;
+    if (incognita.no !== no.nome) return 0;
+    const sentido = direcaoDaReacao(no, incognita.direcao);
+    return direcao === 'x' ? sentido.x : sentido.y;
   }
   const barra = incognita.barra;
   if (barra.no1 !== no.nome && barra.no2 !== no.nome) return 0;
@@ -149,12 +156,17 @@ function coeficiente(trelica, no, direcao, incognita) {
 }
 ```
 
+`direcaoDaReacao(no, direcao)` (linha 28) devolve o vetor unitário de cada reação: Rx → (1; 0),
+Ry → (0; 1) e, no rolete inclinado, Rn → (−sen α; cos α), que é perpendicular à superfície de
+rolamento inclinada de α. Com α = 0 o rolete inclinado vira o rolete comum (só Ry). Por isso o
+coeficiente de Rx em ΣFx é 1 e em ΣFy é 0, e o de Rn é −sen α em ΣFx e cos α em ΣFy.
+
 São três situações:
 
 | Incógnita | Coeficiente |
 |---|---|
-| uma reação **deste** nó, **nesta** direção | 1 |
-| uma reação de outro nó, ou na outra direção | 0 |
+| uma reação **deste** nó | componente x ou y da direção da reação (`direcaoDaReacao`) |
+| uma reação de outro nó | 0 |
 | uma barra que **não toca** este nó | 0 |
 | uma barra que **toca** este nó | cos ou sen da direção **deste nó → outro nó** |
 
@@ -163,7 +175,7 @@ nó. Exemplo: no nó C do triângulo, a barra AC aponta de C (2; 3) para A (0; 0
 `(−2; −3) ÷ 3,6056 = (−0,5547; −0,8321)`. Esses são os coeficientes de NAC nas equações ΣFx e
 ΣFy do nó C.
 
-### 4.7 `montarSistema` (linha 122)
+### 4.7 `montarSistema` (linha 134)
 
 ```js
 trelica.nos.forEach(no => {
@@ -182,7 +194,7 @@ outro lado fica `soma(coef × incógnita) = −carga`, por isso o vetor recebe `
 
 Resultado: `matriz` com 2n linhas × (b + r) colunas e `vetor` com 2n valores.
 
-### 4.8 `resolverPorGauss` (linha 137)
+### 4.8 `resolverPorGauss` (linha 149)
 
 Resolve `[A]·{x} = {c}` em duas fases.
 
@@ -207,7 +219,7 @@ solucao[linha] = (c[linha] − Σ a[linha][k]·solucao[k]) / a[linha][linha]
 Cada troca e cada eliminação ficam gravadas em `etapas`, que é o que a aba "Cálculo passo a passo"
 lista no Passo 6. A função devolve também a matriz já escalonada.
 
-### 4.9 `resolverTrelica` (linha 227) — o roteiro completo
+### 4.9 `resolverTrelica` (linha 235) — o roteiro completo
 
 1. Valida. Se houver erro, para e devolve as mensagens.
 2. Lista incógnitas, classifica, mede as barras e monta o sistema.
@@ -222,7 +234,7 @@ lista no Passo 6. A função devolve também a matriz já escalonada.
 O objeto `resultado` devolvido tem **tudo** (dados, incógnitas, matriz, etapas do Gauss, forças,
 reações, conferência e tensões). Por isso o passo a passo consegue mostrar cada etapa.
 
-### 4.10 `calcularTensoes` (linha 303)
+### 4.10 `calcularTensoes` (linha 317)
 
 ```js
 const tensao = barra.forca * unidades.fatorTensao / barra.area;                  // σ = N/A
@@ -243,7 +255,13 @@ Se a área ou o σadm não foram informados, aquela coluna fica vazia ("—").
 - `calcular` chama `resolverTrelica` e depois os três "mostradores".
 - `mostrarResultados` lista as barras em ordem alfabética (`ordemAlfabetica`), como nos formulários
   de resposta, sem mudar a ordem das incógnitas na matriz.
-- Os nomes dos nós são letras automáticas (`proximoNomeLivre`), como no MDSolids.
+- Os nomes dos nós começam como letras automáticas (`proximoNomeLivre`), como no MDSolids, mas
+  podem ser trocados: `renomearNo` limpa o texto (`limparNome`), recusa nome vazio ou repetido e
+  troca o nome também nas barras ligadas ao nó.
+- Quadro "Carga inclinada": `mostrarPreviaDaCarga` mostra Fx e Fy enquanto o usuário digita, e
+  `somarCargaInclinada` soma essas componentes ao Fx e Fy do nó escolhido. A conta em si é
+  `decomporCarga(F, θ)` (no fim do `calculo.js`): `Fx = F·cos θ`, `Fy = F·sen θ`, com θ em graus
+  medido do eixo x positivo no sentido anti-horário.
 - Salvar/Abrir: transforma o objeto em JSON e vice-versa. `normalizarTrelica` limpa o arquivo
   aberto (aceita só números, nomes com letras/dígitos e tipos de apoio conhecidos).
 
@@ -265,7 +283,7 @@ Se a área ou o σadm não foram informados, aquela coluna fica vazia ("—").
 ## 6. Perguntas sobre o código que podem aparecer
 
 **Onde está o método dos nós?**
-Em `coeficiente` + `montarSistema` (`calculo.js`, linhas 109–135): uma linha da matriz para cada
+Em `coeficiente` + `montarSistema` (`calculo.js`, linhas 119–147): uma linha da matriz para cada
 ΣFx e ΣFy de cada nó.
 
 **Onde ele descobre que a treliça é instável?**
