@@ -213,6 +213,18 @@ const EXEMPLOS = [
     ], 0)
   },
   {
+    titulo: 'Extra: Rolete em plano inclinado (30°)',
+    unidades: 'si_kn',
+    tensaoAdmTracao: 0,
+    tensaoAdmCompressao: 0,
+    nos: [
+      { nome: 'A', x: 0, y: 0, apoio: 'fixo', fx: 0, fy: 0 },
+      { nome: 'B', x: 4, y: 0, apoio: 'rolete_inclinado', anguloApoio: 30, fx: 0, fy: 0 },
+      { nome: 'C', x: 2, y: 3, apoio: 'livre', fx: 0, fy: -10 }
+    ],
+    barras: criarBarras([['A', 'B'], ['A', 'C'], ['B', 'C']], 0)
+  },
+  {
     titulo: 'Erro 1: hipostática (falta apoio)',
     unidades: 'si_kn',
     tensaoAdmTracao: 0,

@@ -35,6 +35,7 @@ function normalizarTrelica(dados) {
     x: Number(no.x) || 0,
     y: Number(no.y) || 0,
     apoio: TIPOS_DE_APOIO[no.apoio] ? no.apoio : 'livre',
+    anguloApoio: Number(no.anguloApoio) || 0,
     fx: Number(no.fx) || 0,
     fy: Number(no.fy) || 0
   }));
@@ -55,14 +56,71 @@ function mostrarTabelaDeNos() {
   const tiposDeApoio = Object.keys(TIPOS_DE_APOIO).map(chave => ({ valor: chave, texto: TIPOS_DE_APOIO[chave].descricao }));
   elemento('corpo-nos').innerHTML = trelica.nos.map((no, i) => `
     <tr>
-      <td class="nome-no">${no.nome}</td>
+      <td><input type="text" class="nome-no" maxlength="4" data-indice="${i}" data-campo="nome" value="${no.nome}"
+        title="Nome do nó (até 4 letras ou números). As barras ligadas a ele são renomeadas junto."></td>
       <td><input type="number" step="any" data-indice="${i}" data-campo="x" value="${no.x}"></td>
       <td><input type="number" step="any" data-indice="${i}" data-campo="y" value="${no.y}"></td>
-      <td><select data-indice="${i}" data-campo="apoio">${opcoes(tiposDeApoio, no.apoio)}</select></td>
+      <td><select data-indice="${i}" data-campo="apoio">${opcoes(tiposDeApoio, no.apoio)}</select>${no.apoio === 'rolete_inclinado' ? `
+        <label class="angulo-apoio" title="Inclinação da superfície do rolete em relação à horizontal, no sentido anti-horário. A reação Rn é perpendicular a ela.">α
+          <input type="number" step="any" data-indice="${i}" data-campo="anguloApoio" value="${no.anguloApoio || 0}">°</label>` : ''}</td>
       <td><input type="number" step="any" data-indice="${i}" data-campo="fx" value="${no.fx}"></td>
       <td><input type="number" step="any" data-indice="${i}" data-campo="fy" value="${no.fy}"></td>
       <td><button class="remover" data-indice="${i}" title="Remover o nó ${no.nome}">×</button></td>
     </tr>`).join('');
+  mostrarSeletorDeCarga();
+  mostrarSeletoresDePosicao();
+}
+
+function mostrarSeletorDeCarga() {
+  const seletor = elemento('carga-no');
+  const anterior = seletor.value;
+  seletor.innerHTML = opcoes(trelica.nos.map(no => ({ valor: no.nome, texto: no.nome })), anterior);
+  mostrarPreviaDaCarga();
+}
+
+function lerCargaInclinada() {
+  const modulo = Number(elemento('carga-modulo').value);
+  const angulo = Number(elemento('carga-angulo').value);
+  if (!Number.isFinite(modulo) || !Number.isFinite(angulo)) return null;
+  return decomporCarga(modulo, angulo);
+}
+
+function mostrarPreviaDaCarga() {
+  const carga = lerCargaInclinada();
+  elemento('carga-previa').textContent = carga
+    ? '→ Fx = ' + formatarComSinal(carga.fx) + ' · Fy = ' + formatarComSinal(carga.fy)
+    : '→ valor inválido';
+}
+
+function somarCargaInclinada() {
+  const no = buscarNo(trelica, elemento('carga-no').value);
+  const carga = lerCargaInclinada();
+  if (!no || !carga) return;
+  const limpar = valor => Math.round(valor * 1e6) / 1e6 || 0;
+  no.fx = limpar(no.fx + carga.fx);
+  no.fy = limpar(no.fy + carga.fy);
+  mostrarTabelaDeNos();
+  aoMudarDados();
+}
+
+function renomearNo(campo) {
+  const no = trelica.nos[campo.dataset.indice];
+  const novoNome = limparNome(campo.value);
+  const repetido = trelica.nos.some(outro => outro !== no && outro.nome === novoNome);
+  if (novoNome === '' || repetido) {
+    alert(novoNome === '' ? 'O nome do nó não pode ficar vazio.' : 'Já existe um nó chamado ' + novoNome + '.');
+    mostrarTabelaDeNos();
+    return;
+  }
+  const nomeAntigo = no.nome;
+  no.nome = novoNome;
+  trelica.barras.forEach(barra => {
+    if (barra.no1 === nomeAntigo) barra.no1 = novoNome;
+    if (barra.no2 === nomeAntigo) barra.no2 = novoNome;
+  });
+  mostrarTabelaDeNos();
+  mostrarTabelaDeBarras();
+  aoMudarDados();
 }
 
 function mostrarTabelaDeBarras() {
@@ -85,6 +143,7 @@ function mostrarUnidades() {
   elemento('selecao-unidades').value = trelica.unidades;
   elemento('tensao-tracao').value = trelica.tensaoAdmTracao;
   elemento('tensao-compressao').value = trelica.tensaoAdmCompressao;
+  elemento('pos-arredondar').checked = unidades.comprimento === 'mm';
 }
 
 function mostrarTudo() {
@@ -123,13 +182,18 @@ function mostrarResultados() {
 
   const u = SISTEMAS_DE_UNIDADES[trelica.unidades];
   const e = r.estaticidade;
-  const linhasReacoes = r.reacoes.map(reacao => `<tr><td>${reacao.nome}</td><td class="numero">${formatarComSinal(reacao.valor)}</td></tr>`).join('');
+  const linhasReacoes = r.reacoes.map(reacao => {
+    const componentes = reacao.direcao === 'n'
+      ? `<br><small>Fx ${formatarComSinal(reacao.fx)} · Fy ${formatarComSinal(reacao.fy)}</small>` : '';
+    return `<tr><td>${reacao.nome}</td><td class="numero">${formatarComSinal(reacao.valor)}${componentes}</td></tr>`;
+  }).join('');
   const ordemAlfabetica = r.barras.map((barra, i) => i).sort((i, j) => r.barras[i].nome.localeCompare(r.barras[j].nome));
   const linhasBarras = ordemAlfabetica.map(i => {
     const barra = r.barras[i];
     const t = r.tensoes[i];
     const classe = barra.situacao === 'Tração' ? 'tracao' : barra.situacao === 'Compressão' ? 'compressao' : 'nula';
     return `<tr><td>${barra.nome}</td><td class="numero">${formatarNumero(barra.comprimento)}</td>
+      <td class="numero">${formatarNumero(barra.angulo)}</td>
       <td class="numero">${formatarComSinal(barra.forca)}</td><td class="${classe}">${barra.situacao}</td>
       <td class="numero">${formatarNumero(t.area, 2)}</td><td class="numero">${formatarComSinal(t.tensao)}</td>
       <td class="numero">${formatarNumero(t.areaNecessaria)}</td><td class="${t.verificacao === 'Excede' ? 'compressao' : ''}">${t.verificacao || '—'}</td></tr>`;
@@ -151,7 +215,7 @@ function mostrarResultados() {
       <div class="rolagem">
         <h3>Forças nas barras <small>(+ tração, − compressão)</small></h3>
         <table class="dados">
-          <thead><tr><th>Barra</th><th>L (${u.comprimento})</th><th>N (${u.forca})</th><th>Situação</th>
+          <thead><tr><th>Barra</th><th>L (${u.comprimento})</th><th title="Ângulo agudo da barra com a horizontal, como nas figuras">Ângulo (°)</th><th>N (${u.forca})</th><th>Situação</th>
             <th>A (${u.area})</th><th>σ (${u.tensao})</th><th>A nec. (${u.area})</th><th>Tensão</th></tr></thead>
           <tbody>${linhasBarras}</tbody>
         </table>
@@ -160,7 +224,7 @@ function mostrarResultados() {
 }
 
 function adicionarNo() {
-  trelica.nos.push({ nome: proximoNomeLivre(), x: 0, y: 0, apoio: 'livre', fx: 0, fy: 0 });
+  trelica.nos.push({ nome: proximoNomeLivre(), x: 0, y: 0, apoio: 'livre', anguloApoio: 0, fx: 0, fy: 0 });
   mostrarTabelaDeNos();
   mostrarTabelaDeBarras();
   aoMudarDados();
@@ -175,8 +239,14 @@ function adicionarBarra() {
 
 function alterarNo(campo) {
   const no = trelica.nos[campo.dataset.indice];
-  if (campo.dataset.campo === 'apoio') no.apoio = campo.value;
-  else no[campo.dataset.campo] = Number(campo.value);
+  if (campo.dataset.campo === 'nome') return;
+  if (campo.dataset.campo === 'apoio') {
+    no.apoio = campo.value;
+    if (!Number.isFinite(no.anguloApoio)) no.anguloApoio = 0;
+    mostrarTabelaDeNos();
+  } else {
+    no[campo.dataset.campo] = Number(campo.value);
+  }
   aoMudarDados();
 }
 
@@ -266,6 +336,12 @@ function ligarEventos() {
   });
 
   elemento('corpo-nos').addEventListener('input', evento => alterarNo(evento.target));
+  elemento('corpo-nos').addEventListener('change', evento => {
+    if (evento.target.dataset.campo === 'nome') renomearNo(evento.target);
+  });
+  elemento('carga-modulo').addEventListener('input', mostrarPreviaDaCarga);
+  elemento('carga-angulo').addEventListener('input', mostrarPreviaDaCarga);
+  elemento('botao-somar-carga').addEventListener('click', somarCargaInclinada);
   elemento('corpo-barras').addEventListener('change', evento => alterarBarra(evento.target));
   elemento('corpo-nos').addEventListener('click', evento => {
     if (evento.target.classList.contains('remover')) removerNo(Number(evento.target.dataset.indice));
@@ -301,6 +377,7 @@ function iniciar() {
   elemento('selecao-unidades').innerHTML = Object.keys(SISTEMAS_DE_UNIDADES)
     .map(chave => `<option value="${chave}">${SISTEMAS_DE_UNIDADES[chave].descricao}</option>`).join('');
   ligarEventos();
+  ligarPosicionarNo();
   elemento('selecao-exemplo').value = '0';
   carregarExemplo(0);
   trocarAba('resultados');

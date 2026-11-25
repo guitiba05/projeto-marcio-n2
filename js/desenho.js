@@ -50,8 +50,11 @@ function desenharSeta(inicio, fim, cor, idDaPonta, texto) {
       text-anchor="${vertical ? 'start' : 'middle'}" class="texto-seta" fill="${cor}">${texto}</text>`;
 }
 
-function desenharApoio(ponto, apoio) {
+function desenharApoio(ponto, apoio, anguloApoio) {
   const { x, y } = ponto;
+  if (apoio === 'rolete_inclinado') {
+    return `<g transform="rotate(${-(anguloApoio || 0)} ${x} ${y})">${desenharApoio(ponto, 'rolete_y')}</g>`;
+  }
   if (apoio === 'fixo') {
     return `<polygon points="${x},${y + 6} ${x - 13},${y + 26} ${x + 13},${y + 26}" class="apoio"></polygon>
       <line x1="${x - 20}" y1="${y + 28}" x2="${x + 20}" y2="${y + 28}" class="chao"></line>`;
@@ -92,6 +95,14 @@ function desenharReacao(ponto, reacao, unidades) {
   if (reacao.valor === 0) return '';
   const sentido = Math.sign(reacao.valor);
   const texto = reacao.nome + ' = ' + formatarNumero(Math.abs(reacao.valor), 2) + ' ' + unidades.forca;
+  if (reacao.direcao === 'n') {
+    const modulo = Math.hypot(reacao.fx, reacao.fy) || 1;
+    const telaX = reacao.fx / modulo;
+    const telaY = -reacao.fy / modulo;
+    const inicio = { x: ponto.x - telaX * 85, y: ponto.y - telaY * 85 };
+    const fim = { x: ponto.x - telaX * 40, y: ponto.y - telaY * 40 };
+    return desenharSeta(inicio, fim, CORES.reacao, 'ponta-reacao', texto);
+  }
   if (reacao.direcao === 'y') {
     const perto = ponto.y + 40;
     const longe = ponto.y + 85;
@@ -145,7 +156,7 @@ function desenharTrelica(svg, trelica, resultado) {
     partes.push(desenharBarra(posicao(inicio), posicao(fim), nomeDaBarra(barra), barraCalculada, trelica.barras.length <= 12));
   });
 
-  trelica.nos.forEach(no => partes.push(desenharApoio(posicao(no), no.apoio)));
+  trelica.nos.forEach(no => partes.push(desenharApoio(posicao(no), no.apoio, no.anguloApoio)));
   trelica.nos.forEach(no => partes.push(desenharCargas(posicao(no), no, unidades)));
 
   if (calculado) {

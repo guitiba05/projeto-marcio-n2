@@ -44,7 +44,47 @@
           </table>
         </div>
         <button id="botao-adicionar-no" class="adicionar">+ Nó</button>
-        <p class="dica">Fx positivo aponta para a direita; Fy positivo aponta para cima. Carga para baixo = Fy negativo.</p>
+        <p class="dica">Fx positivo aponta para a direita; Fy positivo aponta para cima. Carga para baixo = Fy negativo.
+          Clique no nome do nó para trocá-lo (as barras acompanham).</p>
+
+        <div class="carga-inclinada">
+          <strong>Posicionar nó por ângulo</strong>
+          <div class="linha">
+            <label>Nó <select id="pos-no"></select></label>
+            <label>a partir de <select id="pos-ref"></select></label>
+            <label>ângulo da figura (°) <input type="number" step="any" min="0" max="90" id="pos-angulo" value="0"></label>
+            <label>sentido <select id="pos-sentido"></select></label>
+          </div>
+          <div class="linha">
+            <label>dado conhecido
+              <select id="pos-dado">
+                <option value="x">x do nó</option>
+                <option value="y">y do nó</option>
+                <option value="comprimento">comprimento da barra</option>
+              </select></label>
+            <label>valor (<span data-unidade="comprimento"></span>) <input type="number" step="any" id="pos-valor" value="0"></label>
+            <label><input type="checkbox" id="pos-arredondar" checked> arredondar para inteiro</label>
+            <label><input type="checkbox" id="pos-criar-barra" checked> criar a barra</label>
+            <button id="botao-posicionar">Aplicar</button>
+          </div>
+          <p id="pos-previa" class="previa"></p>
+          <p class="dica">Use o ângulo agudo que aparece na figura (entre a barra e a horizontal) e o sentido em que a barra
+            sai do nó de referência. Ex.: no nó C, a barra que sobe para a esquerda a 45° é "45" e "↖". Como os ângulos da
+            figura vêm arredondados, deixe "arredondar para inteiro" marcado quando as coordenadas forem em mm.</p>
+        </div>
+
+        <div class="carga-inclinada">
+          <strong>Carga inclinada</strong>
+          <div class="linha">
+            <label>Nó <select id="carga-no"></select></label>
+            <label>F (<span data-unidade="forca"></span>) <input type="number" step="any" id="carga-modulo" value="0"></label>
+            <label>θ (°) <input type="number" step="any" id="carga-angulo" value="0"></label>
+            <button id="botao-somar-carga">Somar ao nó</button>
+          </div>
+          <p id="carga-previa" class="previa"></p>
+          <p class="dica">θ é medido a partir do eixo x positivo, no sentido anti-horário: 0° → direita, 90° → cima,
+            180° → esquerda, 270° (ou −90°) → baixo. O programa calcula Fx = F·cos θ e Fy = F·sen θ e soma às cargas do nó.</p>
+        </div>
 
         <h2>2. Barras</h2>
         <div class="rolagem">
@@ -108,6 +148,7 @@
   <script src="js/formatar.js"></script>
   <script src="js/desenho.js"></script>
   <script src="js/passo-a-passo.js"></script>
+  <script src="js/posicionar-no.js"></script>
   <script src="js/tela.js"></script>
 </body>
 </html>

@@ -17,7 +17,9 @@ O programa recebe uma treliça plana (nós, apoios, cargas e barras) e calcula:
 Não precisa instalar nada. **Dê duplo clique em `index.html`** e ele abre no navegador.
 
 1. Escolha um **Exemplo** pronto ou clique em **Nova**.
-2. Preencha os **nós** (x, y, apoio e cargas) e as **barras**.
+2. Preencha os **nós** (x, y, apoio e cargas) e as **barras**. O nome do nó pode ser editado.
+   Para carga inclinada, use o quadro **Carga inclinada** (módulo e ângulo). Para posicionar um nó pelo
+   ângulo da figura, use o quadro **Posicionar nó por ângulo**.
 3. Clique em **Calcular**.
 4. Veja a aba **Resultados** e a aba **Cálculo passo a passo**.
 
@@ -39,6 +41,7 @@ js/exemplos.js           exemplos prontos
 js/formatar.js           formatação de números
 js/desenho.js            desenho da treliça
 js/passo-a-passo.js      texto da aba "Cálculo passo a passo"
+js/posicionar-no.js      quadro "Posicionar nó por ângulo"
 js/tela.js               liga a tela ao cálculo
 docs/ROTEIRO_APRESENTACAO.md   ★ roteiro da apresentação com exemplos resolvidos à mão
 docs/COMO_O_CODIGO_FUNCIONA.md explicação do código, função por função

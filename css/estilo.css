@@ -176,6 +176,47 @@ table {
   font-weight: 700;
 }
 
+input.nome-no {
+  width: 46px;
+  padding: 4px 6px;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.angulo-apoio {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.angulo-apoio input[type="number"] {
+  width: 56px;
+}
+
+.carga-inclinada {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px dashed var(--borda);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.carga-inclinada .linha {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.previa {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
 .dica {
   color: var(--suave);
   font-size: 12px;

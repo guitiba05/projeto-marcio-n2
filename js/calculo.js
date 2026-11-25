@@ -5,7 +5,8 @@ const TIPOS_DE_APOIO = {
   livre: { descricao: 'Livre (sem apoio)', reacoes: [] },
   fixo: { descricao: 'Fixo / pino (Rx e Ry)', reacoes: ['x', 'y'] },
   rolete_y: { descricao: 'Rolete (só Ry)', reacoes: ['y'] },
-  rolete_x: { descricao: 'Rolete (só Rx)', reacoes: ['x'] }
+  rolete_x: { descricao: 'Rolete (só Rx)', reacoes: ['x'] },
+  rolete_inclinado: { descricao: 'Rolete inclinado (Rn ⟂ superfície)', reacoes: ['n'] }
 };
 
 const SISTEMAS_DE_UNIDADES = {
@@ -24,6 +25,13 @@ function buscarNo(trelica, nome) {
   return trelica.nos.find(no => no.nome === nome);
 }
 
+function direcaoDaReacao(no, direcao) {
+  if (direcao === 'x') return { x: 1, y: 0 };
+  if (direcao === 'y') return { x: 0, y: 1 };
+  const radianos = (no.anguloApoio || 0) * Math.PI / 180;
+  return { x: -Math.sin(radianos), y: Math.cos(radianos) };
+}
+
 function medirBarra(trelica, barra) {
   const inicio = buscarNo(trelica, barra.no1);
   const fim = buscarNo(trelica, barra.no2);
@@ -36,7 +44,8 @@ function medirBarra(trelica, barra) {
     dy: dy,
     comprimento: comprimento,
     cos: dx / comprimento,
-    sen: dy / comprimento
+    sen: dy / comprimento,
+    angulo: Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI
   };
 }
 
@@ -52,6 +61,7 @@ function validarTrelica(trelica) {
     if (nomes.filter(nome => nome === no.nome).length > 1) erros.push('O nome ' + no.nome + ' está repetido.');
     if (!Number.isFinite(no.x) || !Number.isFinite(no.y)) erros.push('O nó ' + no.nome + ' tem coordenada inválida.');
     if (!Number.isFinite(no.fx) || !Number.isFinite(no.fy)) erros.push('O nó ' + no.nome + ' tem carga inválida.');
+    if (no.apoio === 'rolete_inclinado' && !Number.isFinite(no.anguloApoio)) erros.push('O nó ' + no.nome + ' tem ângulo de apoio inválido.');
   });
 
   const barrasJaVistas = [];
@@ -108,7 +118,9 @@ function classificarEstaticidade(trelica, incognitas) {
 
 function coeficiente(trelica, no, direcao, incognita) {
   if (incognita.tipo === 'reacao') {
-    return incognita.no === no.nome && incognita.direcao === direcao ? 1 : 0;
+    if (incognita.no !== no.nome) return 0;
+    const sentido = direcaoDaReacao(no, incognita.direcao);
+    return direcao === 'x' ? sentido.x : sentido.y;
   }
   const barra = incognita.barra;
   if (barra.no1 !== no.nome && barra.no2 !== no.nome) return 0;
@@ -206,13 +218,9 @@ function conferirEquilibrio(trelica, sistema, valores, reacoes) {
   });
   reacoes.forEach(reacao => {
     const no = buscarNo(trelica, reacao.no);
-    if (reacao.direcao === 'x') {
-      somaFx += reacao.valor;
-      somaMomentos += -no.y * reacao.valor;
-    } else {
-      somaFy += reacao.valor;
-      somaMomentos += no.x * reacao.valor;
-    }
+    somaFx += reacao.fx;
+    somaFy += reacao.fy;
+    somaMomentos += no.x * reacao.fy - no.y * reacao.fx;
   });
 
   return {
@@ -271,6 +279,7 @@ function resolverTrelica(trelica) {
     no1: barra.no1,
     no2: barra.no2,
     comprimento: geometria[i].comprimento,
+    angulo: geometria[i].angulo,
     forca: valores[i],
     situacao: situacaoDaBarra(valores[i]),
     area: barra.area
@@ -279,12 +288,17 @@ function resolverTrelica(trelica) {
   const reacoes = incognitas
     .map((incognita, i) => ({ incognita: incognita, valor: valores[i] }))
     .filter(item => item.incognita.tipo === 'reacao')
-    .map(item => ({
-      nome: item.incognita.nome,
-      no: item.incognita.no,
-      direcao: item.incognita.direcao,
-      valor: item.valor
-    }));
+    .map(item => {
+      const sentido = direcaoDaReacao(buscarNo(trelica, item.incognita.no), item.incognita.direcao);
+      return {
+        nome: item.incognita.nome,
+        no: item.incognita.no,
+        direcao: item.incognita.direcao,
+        valor: item.valor,
+        fx: arredondarZero(item.valor * sentido.x),
+        fy: arredondarZero(item.valor * sentido.y)
+      };
+    });
 
   resultado.sucesso = true;
   resultado.valores = valores;
@@ -319,4 +333,39 @@ function calcularTensoes(barras, unidades, tensaoAdmTracao, tensaoAdmCompressao)
       verificacao: verificacao
     };
   });
+}
+
+function decomporCarga(modulo, anguloGraus) {
+  const radianos = anguloGraus * Math.PI / 180;
+  const limpar = valor => Math.round(valor * 1e6) / 1e6 || 0;
+  return {
+    fx: limpar(modulo * Math.cos(radianos)),
+    fy: limpar(modulo * Math.sin(radianos))
+  };
+}
+
+const SENTIDOS_DA_BARRA = {
+  direita_cima: { descricao: '↗ direita e para cima', x: 1, y: 1 },
+  esquerda_cima: { descricao: '↖ esquerda e para cima', x: -1, y: 1 },
+  esquerda_baixo: { descricao: '↙ esquerda e para baixo', x: -1, y: -1 },
+  direita_baixo: { descricao: '↘ direita e para baixo', x: 1, y: -1 }
+};
+
+function posicionarPorAngulo(referencia, anguloGraus, sentido, dado) {
+  const sinais = SENTIDOS_DA_BARRA[sentido];
+  if (!sinais || !Number.isFinite(anguloGraus) || !Number.isFinite(dado.valor)) return { erro: 'Preencha o ângulo e o valor.' };
+  if (anguloGraus < 0 || anguloGraus > 90) return { erro: 'Use o ângulo agudo da figura (entre 0° e 90°) e escolha o sentido.' };
+  const radianos = anguloGraus * Math.PI / 180;
+  const ux = sinais.x * Math.cos(radianos);
+  const uy = sinais.y * Math.sin(radianos);
+  let comprimento = dado.valor;
+  if (dado.tipo === 'x') {
+    if (Math.abs(ux) < 1e-9) return { erro: 'Barra vertical: o x não muda. Informe y ou o comprimento.' };
+    comprimento = (dado.valor - referencia.x) / ux;
+  } else if (dado.tipo === 'y') {
+    if (Math.abs(uy) < 1e-9) return { erro: 'Barra horizontal: o y não muda. Informe x ou o comprimento.' };
+    comprimento = (dado.valor - referencia.y) / uy;
+  }
+  if (!(comprimento > 0)) return { erro: 'Com esse sentido o valor informado fica do lado errado. Confira o sentido (↗ ↖ ↙ ↘).' };
+  return { x: referencia.x + comprimento * ux, y: referencia.y + comprimento * uy, comprimento: comprimento };
 }
