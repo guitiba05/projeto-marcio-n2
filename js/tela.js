@@ -87,6 +87,19 @@ function mostrarUnidades() {
   elemento('tensao-compressao').value = trelica.tensaoAdmCompressao;
 }
 
+// Opções do desenho lidas da tela (rótulos, grade e espessura).
+function opcoesDoDesenho() {
+  return {
+    rotulos: elemento('selecao-rotulos').value,
+    grade: elemento('mostrar-grade').checked,
+    espessura: elemento('espessura-proporcional').checked
+  };
+}
+
+function desenhar() {
+  desenharTrelica(elemento('desenho'), trelica, resultadoAtual, opcoesDoDesenho());
+}
+
 function mostrarTudo() {
   mostrarTabelaDeNos();
   mostrarTabelaDeBarras();
@@ -96,14 +109,22 @@ function mostrarTudo() {
 
 function aoMudarDados() {
   resultadoAtual = null;
-  desenharTrelica(elemento('desenho'), trelica, null);
+  desenhar();
   mostrarResultados();
   elemento('conteudo-passo-a-passo').innerHTML = gerarPassoAPasso(null);
 }
 
 function calcular() {
   resultadoAtual = resolverTrelica(trelica);
-  desenharTrelica(elemento('desenho'), trelica, resultadoAtual);
+  desenhar();
+  mostrarResultados();
+  elemento('conteudo-passo-a-passo').innerHTML = gerarPassoAPasso(resultadoAtual);
+}
+
+// Redesenha tela e passo a passo com o resultado que já está na memória.
+// Usado ao trocar as casas decimais: não é preciso calcular a treliça de novo.
+function redesenharTudo() {
+  desenhar();
   mostrarResultados();
   elemento('conteudo-passo-a-passo').innerHTML = gerarPassoAPasso(resultadoAtual);
 }
@@ -129,7 +150,8 @@ function mostrarResultados() {
     const barra = r.barras[i];
     const t = r.tensoes[i];
     const classe = barra.situacao === 'Tração' ? 'tracao' : barra.situacao === 'Compressão' ? 'compressao' : 'nula';
-    return `<tr><td>${barra.nome}</td><td class="numero">${formatarNumero(barra.comprimento)}</td>
+    return `<tr data-barra="${barra.nome}"><td>${barra.nome}</td><td class="numero">${formatarNumero(barra.comprimento)}</td>
+      <td class="numero">${formatarNumero(barra.anguloGraus)}</td>
       <td class="numero">${formatarComSinal(barra.forca)}</td><td class="${classe}">${barra.situacao}</td>
       <td class="numero">${formatarNumero(t.area, 2)}</td><td class="numero">${formatarComSinal(t.tensao)}</td>
       <td class="numero">${formatarNumero(t.areaNecessaria)}</td><td class="${t.verificacao === 'Excede' ? 'compressao' : ''}">${t.verificacao || '—'}</td></tr>`;
@@ -149,9 +171,12 @@ function mostrarResultados() {
         <p>Barras de força zero: ${zeradas.length ? zeradas.join(', ') : 'nenhuma'}</p>
       </div>
       <div class="rolagem">
-        <h3>Forças nas barras <small>(+ tração, − compressão)</small></h3>
+        <div class="titulo-tabela">
+          <h3>Forças nas barras <small>(+ tração, − compressão)</small></h3>
+          <button id="botao-copiar-resumo" class="secundario">Copiar resumo</button>
+        </div>
         <table class="dados">
-          <thead><tr><th>Barra</th><th>L (${u.comprimento})</th><th>N (${u.forca})</th><th>Situação</th>
+          <thead><tr><th>Barra</th><th>L (${u.comprimento})</th><th>θ (°)</th><th>N (${u.forca})</th><th>Situação</th>
             <th>A (${u.area})</th><th>σ (${u.tensao})</th><th>A nec. (${u.area})</th><th>Tensão</th></tr></thead>
           <tbody>${linhasBarras}</tbody>
         </table>
@@ -159,6 +184,75 @@ function mostrarResultados() {
     </div>`;
 }
 
+
+// Texto da lista de forças para copiar (ordem alfabética, valor em módulo + tipo).
+function resumoDasForcas() {
+  if (!resultadoAtual || !resultadoAtual.sucesso) return '';
+  return resultadoAtual.barras
+    .slice()
+    .sort((a, b) => a.nome.localeCompare(b.nome))
+    .map(barra => `${barra.nome}: ${formatarNumero(Math.abs(barra.forca))} kN (${barra.situacao})`)
+    .join('\n');
+}
+
+function copiarResumo() {
+  const texto = resumoDasForcas();
+  if (!texto) return;
+  const botao = elemento('botao-copiar-resumo');
+  const avisar = () => {
+    const original = botao.textContent;
+    botao.textContent = 'Copiado!';
+    setTimeout(() => { botao.textContent = original; }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(avisar, () => copiarComTextarea(texto, avisar));
+  } else {
+    copiarComTextarea(texto, avisar);
+  }
+}
+
+// Alternativa para quando a área de transferência não está disponível.
+function copiarComTextarea(texto, avisar) {
+  const area = document.createElement('textarea');
+  area.value = texto;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.select();
+  try {
+    document.execCommand('copy');
+    avisar();
+  } catch (erro) {
+    alert('Não foi possível copiar. Selecione o texto manualmente.');
+  }
+  document.body.removeChild(area);
+}
+
+// Destaque sincronizado entre a tabela de forças e o desenho.
+function destacarBarra(nome) {
+  document.querySelectorAll('[data-barra]').forEach(alvo => {
+    const igual = nome !== null && alvo.dataset.barra === nome;
+    alvo.classList.toggle('barra-destaque', igual);
+    alvo.classList.toggle('barra-atenuada', nome !== null && !igual);
+    if (alvo.tagName === 'TR') alvo.classList.toggle('linha-destaque', igual);
+  });
+}
+
+function ligarDestaque() {
+  const caixa = elemento('conteudo-resultados');
+  caixa.addEventListener('mouseover', evento => {
+    const linha = evento.target.closest('tr[data-barra]');
+    destacarBarra(linha ? linha.dataset.barra : null);
+  });
+  caixa.addEventListener('mouseleave', () => destacarBarra(null));
+  const svg = elemento('desenho');
+  svg.addEventListener('mouseover', evento => {
+    const grupo = evento.target.closest('[data-barra]');
+    destacarBarra(grupo ? grupo.dataset.barra : null);
+  });
+  svg.addEventListener('mouseleave', () => destacarBarra(null));
+}
 function adicionarNo() {
   trelica.nos.push({ nome: proximoNomeLivre(), x: 0, y: 0, apoio: 'livre', fx: 0, fy: 0 });
   mostrarTabelaDeNos();
@@ -278,6 +372,19 @@ function ligarEventos() {
   elemento('botao-adicionar-barra').addEventListener('click', adicionarBarra);
   elemento('botao-aplicar-area').addEventListener('click', aplicarAreaEmTodas);
   elemento('botao-calcular').addEventListener('click', calcular);
+  elemento('corpo-barras').addEventListener('input', evento => {
+    if (evento.target.dataset.campo === 'area') alterarBarra(evento.target);
+  });
+  elemento('selecao-casas').addEventListener('change', evento => {
+    casasDecimaisPadrao = Number(evento.target.value) || 3;
+    redesenharTudo();
+  });
+  ['selecao-rotulos', 'mostrar-grade', 'espessura-proporcional'].forEach(id =>
+    elemento(id).addEventListener('change', desenhar));
+  elemento('conteudo-resultados').addEventListener('click', evento => {
+    if (evento.target.id === 'botao-copiar-resumo') copiarResumo();
+  });
+  ligarDestaque();
 
   elemento('botao-novo').addEventListener('click', () => {
     trelica = criarTrelicaVazia();
@@ -300,6 +407,7 @@ function iniciar() {
     EXEMPLOS.map((exemplo, i) => `<option value="${i}">${exemplo.titulo}</option>`).join('');
   elemento('selecao-unidades').innerHTML = Object.keys(SISTEMAS_DE_UNIDADES)
     .map(chave => `<option value="${chave}">${SISTEMAS_DE_UNIDADES[chave].descricao}</option>`).join('');
+  elemento('selecao-casas').value = String(casasDecimaisPadrao);
   ligarEventos();
   elemento('selecao-exemplo').value = '0';
   carregarExemplo(0);

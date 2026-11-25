@@ -21,6 +21,15 @@ Não precisa instalar nada. **Dê duplo clique em `index.html`** e ele abre no n
 3. Clique em **Calcular**.
 4. Veja a aba **Resultados** e a aba **Cálculo passo a passo**.
 
+## Opções da tela
+
+- **Casas** (cabeçalho): mostra os resultados com **2, 3 ou 4** casas decimais — tabela, desenho e resumo copiado. O padrão é 3.
+- **Rótulos** (acima do desenho): `Nome + valor`, `Só valor`, `Só nome` ou `Ocultar`.
+- **Grade** e **Espessura proporcional**: desenho opcional com grade cartesiana e barra mais grossa onde a força é maior.
+- **Coluna θ (°)** na tabela de forças: ângulo da barra com a horizontal, para conferir com a figura do exercício.
+- **Copiar resumo**: copia a lista `AB: 5,217 kN (Tração)` de todas as barras, em ordem alfabética.
+- Passar o rato numa linha da tabela (ou numa barra do desenho) destaca a barra correspondente; o desenho também mostra uma dica com L, θ e N ao parar o rato.
+
 ## Como o cálculo funciona (resumo)
 
 1. Cada nó dá 2 equações: **ΣFx = 0** e **ΣFy = 0** (método dos nós).

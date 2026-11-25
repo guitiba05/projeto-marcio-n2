@@ -15,6 +15,11 @@
     <div class="ferramentas">
       <label>Exemplo <select id="selecao-exemplo"></select></label>
       <label>Unidades <select id="selecao-unidades"></select></label>
+      <label>Casas <select id="selecao-casas">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select></label>
       <button id="botao-novo">Nova</button>
       <button id="botao-abrir">Abrir</button>
       <input type="file" id="arquivo" accept=".json,application/json" hidden>
@@ -82,6 +87,17 @@
 
       <section class="painel desenho-painel">
         <h2>Desenho</h2>
+        <div class="controles-desenho">
+          <label>Rótulos
+            <select id="selecao-rotulos">
+              <option value="nome-valor">Nome + valor</option>
+              <option value="valor">Só valor</option>
+              <option value="nome">Só nome</option>
+              <option value="ocultar">Ocultar</option>
+            </select></label>
+          <label><input type="checkbox" id="mostrar-grade"> Grade</label>
+          <label><input type="checkbox" id="espessura-proporcional"> Espessura proporcional</label>
+        </div>
         <svg id="desenho" role="img" aria-label="Desenho da treliça"></svg>
         <ul class="legenda">
           <li><span class="cor tracao-cor"></span>Tração (+)</li>

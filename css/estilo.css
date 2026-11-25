@@ -453,9 +453,77 @@ details ol,
   }
 }
 
+/* ---- Controles do desenho (rótulos, grade, espessura) ---- */
+.controles-desenho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  margin: 0 0 8px;
+  color: var(--suave);
+}
+
+.controles-desenho label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ---- Título da tabela de forças com o botão de copiar ---- */
+.titulo-tabela {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.titulo-tabela h3 {
+  margin: 10px 0 4px;
+}
+
+.secundario {
+  font-size: 12px;
+  padding: 3px 8px;
+}
+
+/* ---- Destaque sincronizado entre a tabela e o desenho ---- */
+.grupo-barra {
+  transition: opacity 0.12s ease;
+}
+
+.barra-destaque line {
+  stroke-width: 7;
+}
+
+.barra-destaque .texto-barra {
+  font-weight: 700;
+}
+
+.barra-atenuada {
+  opacity: 0.25;
+}
+
+tr.linha-destaque td {
+  background: #e6f4f1;
+}
+
+/* ---- Grade opcional do desenho ---- */
+.linha-grade {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.texto-grade {
+  fill: #94a3b8;
+  font-size: 10px;
+}
+
 @media print {
   body {
     background: #fff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .ferramentas,
@@ -464,6 +532,8 @@ details ol,
   .adicionar,
   .remover,
   .campos,
+  .controles-desenho,
+  .secundario,
   .entrada {
     display: none !important;
   }
@@ -479,6 +549,13 @@ details ol,
 
   .painel {
     border: none;
+  }
+
+  .desenho-painel,
+  .passo,
+  .bloco-no,
+  table {
+    break-inside: avoid;
   }
 
   details {

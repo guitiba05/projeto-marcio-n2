@@ -36,7 +36,8 @@ function medirBarra(trelica, barra) {
     dy: dy,
     comprimento: comprimento,
     cos: dx / comprimento,
-    sen: dy / comprimento
+    sen: dy / comprimento,
+    anguloGraus: Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI
   };
 }
 
@@ -158,7 +159,7 @@ function resolverPorGauss(matrizOriginal, vetorOriginal) {
 
     for (let linha = coluna + 1; linha < tamanho; linha++) {
       const fator = a[linha][coluna] / a[coluna][coluna];
-      if (fator === 0) continue;
+      if (Math.abs(fator) < 1e-12) continue;
       for (let k = coluna; k < tamanho; k++) {
         a[linha][k] = a[linha][k] - fator * a[coluna][k];
       }
@@ -271,6 +272,7 @@ function resolverTrelica(trelica) {
     no1: barra.no1,
     no2: barra.no2,
     comprimento: geometria[i].comprimento,
+    anguloGraus: geometria[i].anguloGraus,
     forca: valores[i],
     situacao: situacaoDaBarra(valores[i]),
     area: barra.area
