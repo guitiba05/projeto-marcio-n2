@@ -68,6 +68,7 @@ function mostrarTabelaDeNos() {
       <td><button class="remover" data-indice="${i}" title="Remover o nó ${no.nome}">×</button></td>
     </tr>`).join('');
   mostrarSeletorDeCarga();
+  mostrarSeletoresDePosicao();
 }
 
 function mostrarSeletorDeCarga() {
@@ -142,6 +143,7 @@ function mostrarUnidades() {
   elemento('selecao-unidades').value = trelica.unidades;
   elemento('tensao-tracao').value = trelica.tensaoAdmTracao;
   elemento('tensao-compressao').value = trelica.tensaoAdmCompressao;
+  elemento('pos-arredondar').checked = unidades.comprimento === 'mm';
 }
 
 function mostrarTudo() {
@@ -375,6 +377,7 @@ function iniciar() {
   elemento('selecao-unidades').innerHTML = Object.keys(SISTEMAS_DE_UNIDADES)
     .map(chave => `<option value="${chave}">${SISTEMAS_DE_UNIDADES[chave].descricao}</option>`).join('');
   ligarEventos();
+  ligarPosicionarNo();
   elemento('selecao-exemplo').value = '0';
   carregarExemplo(0);
   trocarAba('resultados');

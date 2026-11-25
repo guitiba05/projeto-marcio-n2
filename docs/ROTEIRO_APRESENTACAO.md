@@ -155,7 +155,9 @@ diminui o comprimento de flambagem das barras comprimidas.
 1. **Escolha uma origem** (normalmente o apoio da esquerda em (0; 0)).
 2. **Dê nome aos nós.** O programa sugere letras automáticas A, B, C…, mas o nome é editável:
    clique nele e digite o nome da figura (as barras ligadas ao nó são renomeadas junto).
-3. **Calcule as coordenadas** de cada nó a partir das cotas da figura (vãos e alturas).
+3. **Calcule as coordenadas** de cada nó a partir das cotas da figura (vãos e alturas). Se a figura
+   der o ângulo de uma barra, use o quadro **Posicionar nó por ângulo**: nó de referência, ângulo
+   agudo da figura, sentido (↗ ↖ ↙ ↘) e um dado conhecido (x, y ou comprimento).
 4. **Apoios:** pino → "Fixo"; rolete sobre o chão → "Rolete (só Ry)"; rolete numa parede →
    "Rolete (só Rx)"; rolete sobre um plano inclinado → "Rolete inclinado" e digite α, a inclinação
    do plano em relação à horizontal (anti-horário). A reação Rn é perpendicular ao plano e o
@@ -569,6 +571,11 @@ Todos são isostáticos e a prova real dá zero em todos.
 
 1. **Unidades:** "kN, mm, mm², MPa" (já é o padrão do programa).
 2. **Coordenadas:** cada linha da grade vale 100 mm. Leia x no eixo de cima e y no eixo da esquerda.
+   Alternativa pelo ângulo: digite só o primeiro nó (ex.: A) e posicione os outros no quadro
+   **Posicionar nó por ângulo**. Ex. 1: B a partir de A, 63,435°, ↗, x = 400 → B = (400; 800);
+   C a partir de A, 0°, ↗, x = 1000 → C = (1000; 200). O quadro já cria as barras AB e AC.
+   Deixe "arredondar para inteiro" marcado: o ângulo da figura tem 3 casas e, sem arredondar,
+   a coordenada pode sair 799,99 em vez de 800.
 3. **Confira com o ângulo desenhado:** `tan(ângulo) = Δy / Δx`. Exemplo: 63,435° → 600/300 = 2 → tan 63,435° = 2 ✓.
    Ângulos comuns: 45° → 1:1 · 56,310° → 3:2 · 63,435° → 2:1 · 71,565° → 3:1 · 80,538° → 6:1 ·
    83,660° → 9:1 · 75,964° → 4:1 · 74,055° → 7:2 · 33,690° → 2:3 · 26,565° → 1:2 · 18,435° → 1:3 ·

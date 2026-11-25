@@ -13,6 +13,7 @@ js/exemplos.js        treliças prontas do seletor "Exemplo"
 js/formatar.js        escreve números no formato brasileiro (vírgula, sinal de menos)
 js/desenho.js         desenha a treliça em SVG (barras, apoios, cargas, reações)
 js/passo-a-passo.js   transforma o resultado do cálculo no texto da aba "Cálculo passo a passo"
+js/posicionar-no.js   quadro "Posicionar nó por ângulo" (lê a tela e chama posicionarPorAngulo)
 js/tela.js            liga tudo: lê as tabelas, chama o cálculo e mostra o resultado
 ```
 
@@ -258,6 +259,14 @@ Se a área ou o σadm não foram informados, aquela coluna fica vazia ("—").
 - Os nomes dos nós começam como letras automáticas (`proximoNomeLivre`), como no MDSolids, mas
   podem ser trocados: `renomearNo` limpa o texto (`limparNome`), recusa nome vazio ou repetido e
   troca o nome também nas barras ligadas ao nó.
+- Quadro "Posicionar nó por ângulo" (`posicionar-no.js`): o usuário escolhe o nó, o nó de referência, o
+  ângulo agudo da figura, o sentido da barra (↗ ↖ ↙ ↘) e um dado conhecido (x, y ou comprimento).
+  `posicionarPorAngulo` (no fim do `calculo.js`) monta o vetor unitário (±cos α; ±sen α), acha o
+  comprimento L que leva ao dado conhecido (por exemplo, L = (x − x_ref) / (±cos α)) e devolve
+  `x = x_ref + L·(±cos α)`, `y = y_ref + L·(±sen α)`. Se L sair negativo, o sentido escolhido está
+  errado e aparece um aviso. Como os ângulos das figuras vêm com 3 casas, a coordenada pode sair com
+  centésimos de mm de diferença; por isso há a opção "arredondar para inteiro" (ligada em mm). Se a
+  barra entre os dois nós não existir, ela é criada.
 - Quadro "Carga inclinada": `mostrarPreviaDaCarga` mostra Fx e Fy enquanto o usuário digita, e
   `somarCargaInclinada` soma essas componentes ao Fx e Fy do nó escolhido. A conta em si é
   `decomporCarga(F, θ)` (no fim do `calculo.js`): `Fx = F·cos θ`, `Fy = F·sen θ`, com θ em graus

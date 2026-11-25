@@ -343,3 +343,29 @@ function decomporCarga(modulo, anguloGraus) {
     fy: limpar(modulo * Math.sin(radianos))
   };
 }
+
+const SENTIDOS_DA_BARRA = {
+  direita_cima: { descricao: '↗ direita e para cima', x: 1, y: 1 },
+  esquerda_cima: { descricao: '↖ esquerda e para cima', x: -1, y: 1 },
+  esquerda_baixo: { descricao: '↙ esquerda e para baixo', x: -1, y: -1 },
+  direita_baixo: { descricao: '↘ direita e para baixo', x: 1, y: -1 }
+};
+
+function posicionarPorAngulo(referencia, anguloGraus, sentido, dado) {
+  const sinais = SENTIDOS_DA_BARRA[sentido];
+  if (!sinais || !Number.isFinite(anguloGraus) || !Number.isFinite(dado.valor)) return { erro: 'Preencha o ângulo e o valor.' };
+  if (anguloGraus < 0 || anguloGraus > 90) return { erro: 'Use o ângulo agudo da figura (entre 0° e 90°) e escolha o sentido.' };
+  const radianos = anguloGraus * Math.PI / 180;
+  const ux = sinais.x * Math.cos(radianos);
+  const uy = sinais.y * Math.sin(radianos);
+  let comprimento = dado.valor;
+  if (dado.tipo === 'x') {
+    if (Math.abs(ux) < 1e-9) return { erro: 'Barra vertical: o x não muda. Informe y ou o comprimento.' };
+    comprimento = (dado.valor - referencia.x) / ux;
+  } else if (dado.tipo === 'y') {
+    if (Math.abs(uy) < 1e-9) return { erro: 'Barra horizontal: o y não muda. Informe x ou o comprimento.' };
+    comprimento = (dado.valor - referencia.y) / uy;
+  }
+  if (!(comprimento > 0)) return { erro: 'Com esse sentido o valor informado fica do lado errado. Confira o sentido (↗ ↖ ↙ ↘).' };
+  return { x: referencia.x + comprimento * ux, y: referencia.y + comprimento * uy, comprimento: comprimento };
+}
